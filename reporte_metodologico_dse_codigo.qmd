@@ -10,9 +10,6 @@ format:
     number-sections: true
     code-fold: true
     code-summary: "Código"
-  docx:
-    toc: true
-    number-sections: true
 ---
 
 ```{r}
@@ -873,11 +870,6 @@ screenreg(
 )
 ```
 
-## Modelos con errores estándar agrupados por estudiante
-
-### Modelos
-
-Regresiones lineales con esfuerzo y talento sin centrar (0/1) y los moderadores en su escala original. Incluyen el moderador y sus interacciones con ambos atributos. Los errores estándar agrupados se calculan al construir las tablas, no dentro de `lm()`.
 
 ```{r}
 #| label: cluster-modelos
@@ -1023,9 +1015,6 @@ cl_nivel <- lm(
   data = set_exp_c)
 ```
 
-### Tablas con modelsummary
-
-El argumento `vcov = ~id_estudiante` indica que los errores estándar se agrupan por estudiante.
 
 ```{r}
 #| include: false
@@ -1061,10 +1050,6 @@ modelsummary(
   output    = "markdown"
 )
 ```
-
-### Tablas con texreg
-
-La función calcula los errores estándar y los valores p agrupados por estudiante con `vcovCL`, y agrega el número de estudiantes de cada modelo. Los valores p provienen de `coeftest`, es decir, de una distribución t con los errores agrupados.
 
 ```{r}
 #| include: false

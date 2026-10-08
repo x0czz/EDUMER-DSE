@@ -30,7 +30,7 @@ window.addEventListener('load', function () {
     return textarea.value.trim();
   };
 
-  const metaRepoUrl = decodeMeta('{{< meta book.repo-url >}}');
+  const metaRepoUrl = 'https://github.com/x0czz/EDUMER-DSE';
   const metaRepoUrlNormalized = metaRepoUrl ? metaRepoUrl.replace(/\/+$/g, '') : '';
 
   const computeArchiveUrl = (hrefHint) => {

@@ -1,4 +1,4 @@
 # Plantilla de reportes FACSO
 
-experimento distribucional EUDMER\
 
+[Draft](https://x0czz.github.io/EDUMER-DSE/)
