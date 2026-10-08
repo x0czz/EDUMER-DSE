@@ -10,6 +10,8 @@ _freeze/
 *.knit.md
 *_cache/
 *_files/
+!reporte_metodologico_dse_codigo_files/
+!reporte_metodologico_dse_codigo_files/**
 *.log
 *.aux
 *.toc

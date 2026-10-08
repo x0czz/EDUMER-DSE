@@ -13,8 +13,7 @@ reference-location: section
 
 format:
   html:
-    theme:
-      light: cosmo
+    theme: cosmo
     toc: true
     toc-depth: 3
     toc-location: right
@@ -22,7 +21,7 @@ format:
     code-copy: true
     code-tools: true
     df-print: paged
-    css: assets/styles.scss
+    css: assets/styles.css
     favicon: assets/favicon-2025-20251031.svg
     anchor-sections: true
     smooth-scroll: true
