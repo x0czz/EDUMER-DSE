@@ -1,0 +1,809 @@
+```{r}
+#| label: setup
+#| include: false
+
+# install.packages(c("sandwich", "lmtest", "texreg"))   # si no los tienes
+
+library(tidyverse)
+library(haven)
+library(summarytools)
+library(lme4)
+library(lmerTest)
+library(emmeans)
+library(modelsummary)
+library(knitr)
+library(texreg)
+library(sandwich)
+library(lmtest)
+
+options(scipen = 999)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+# Propuesta de análisis del DSE con resultado binario (aprueba / no aprueba)
+
+Los estudiantes parten con nota 3,7, y 3 décimas o más permiten pasar a 4,0. La variable `aprueba` vale 1 si el perfil recibe 3 o más décimas y 0 en caso contrario.
+
+## Preparación de los datos
+
+### Carga y formato largo
+
+```{r}
+#| label: carga-datos
+
+load("input/db_proc_students_w02.RData")
+
+# Formato ancho: décimas numéricas y total repartido
+dse_wide <- db_students_w02 %>%
+  mutate(
+    across(starts_with("exp_t4_"), ~ as.numeric(zap_labels(.x))),
+    total_decimas = rowSums(across(starts_with("exp_t4_")), na.rm = FALSE)
+  )
+
+# Formato largo: una fila por estudiante-perfil
+dse <- dse_wide %>%
+  filter(total_decimas == 10) %>%                 # repartos completos que suman 10
+  select(-matches("^exp_t[123]_")) %>%            # se mantienen las demás variables (nivel 2)
+  pivot_longer(
+    cols         = starts_with("exp_t4_"),
+    names_to     = "perfil",
+    names_prefix = "exp_t4_",
+    values_to    = "decimas"
+  ) %>%
+  mutate(
+    perfil   = toupper(perfil),
+    # Esfuerzo: 1 = se esfuerza más que la mayoría; 0 = se esfuerza menos
+    esfuerzo = if_else(perfil %in% c("A", "C"), 1L, 0L),
+    # Talento (condiciones no controlables): 1 = casa grande; 0 = casa pequeña
+    talento  = if_else(perfil %in% c("B", "C"), 1L, 0L),
+    # Variable binaria: 3 o más décimas permiten aprobar (3,7 -> 4,0)
+    aprueba  = if_else(decimas >= 3, 1L, 0L),
+    # Curso único: la etiqueta del curso (d3_def_o1) se repite entre colegios (d2_o2)
+    curso_id = interaction(d2_o2, d3_def_o1, drop = TRUE)
+  ) %>%
+  arrange(id_estudiante, perfil)
+```
+
+### Selección y etiquetado de variables
+
+```{r}
+#| label: variables-labels
+
+set_exp <- dse %>%
+  select(
+    id_estudiante,
+    curso_id,
+    perfil,
+    esfuerzo,
+    talento,
+    decimas,
+    aprueba,
+    sexo                  = p14_o2,
+    nivel                 = nivel_estudiante_o2,
+    justif_talento        = p9_6_o2,    # está bien que los más inteligentes/talentosos ganen más
+    mindset_inteligencia  = p8_2_o2,    # las personas pueden ser más inteligentes si lo intentan
+    esfuerzo_vs_intel     = p3_o2,      # 1 = esfuerzo ... 10 = inteligencia
+    merecen_lo_que_tienen = p1_10_o2,   # en Chile, todas las personas obtienen lo que merecen
+    mayor_recomp_esfuerzo = p1_5_o2,    # quienes más se esfuerzan deberían obtener mayores recompensas
+    mayor_recomp_talento  = p1_6_o2,    # quienes poseen más talento deberían obtener mayores recompensas
+
+    # Bloque I: BSM y atribución causal del logro (escuela)
+    bsm_esfuerzo          = p2_1_o2,    # en esta escuela, quienes se esfuerzan obtienen buenas notas
+    bsm_talento           = p2_2_o2,    # en esta escuela, quienes son inteligentes obtienen buenas notas
+    bsm_merecimiento      = p2_3_o2,    # en esta escuela, los/as estudiantes obtienen las notas que merecen
+
+    # Bloque II: experiencia evaluativa personal
+    promedio_notas        = p4_o2,      # promedio final del año pasado (1.0-7.0)
+    promedio_vs_merecido  = p5_o2,      # el promedio fue más o menos de lo que merecía
+    promedio_merecido     = p6_o2,      # promedio que cree que merecía (1.0-7.0)
+    notas_vs_tiempo       = p7_o2,      # las notas que me saco, dado el tiempo que dedico a estudiar
+
+    # Bloque III: teorías implícitas (la de inteligencia ya está arriba: mindset_inteligencia)
+    mindset_esfuerzo      = p8_1_o2,    # las personas pueden esforzarse más si lo intentan
+
+    # Bloque IV: percepciones descriptivas de Chile (merecen_lo_que_tienen ya está arriba)
+    chile_recomp_esfuerzo        = p1_1_o2,  # en Chile, las personas son recompensadas por sus esfuerzos
+    chile_recomp_inteligencia    = p1_2_o2,  # en Chile, son recompensadas por su inteligencia y habilidad
+    chile_padres_ricos           = p1_3_o2,  # a quienes tienen padres ricos les va mucho mejor
+    chile_contactos              = p1_4_o2,  # a quienes tienen buenos contactos les va mejor
+    chile_igualdad_oportunidades = p1_9_o2,  # todas las personas tienen las mismas oportunidades
+
+    # Bloque V: NSE, capital cultural y demografía (sexo y nivel ya están arriba)
+    educ_esperada         = p16_o2,     # nivel educacional que cree que va a completar
+    educ_madre            = p17_o2,     # último nivel de estudios de la madre
+    educ_padre            = p18_o2,     # último nivel de estudios del padre
+    libros_hogar          = p19_o2,     # cantidad aproximada de libros en el hogar
+    mes_nac               = p15_mes_o2, # mes de nacimiento
+    anio_nac              = p15_ano_o2  # año de nacimiento
+  )
+
+niveles_acuerdo <- c("Muy en desacuerdo", "En desacuerdo", "De acuerdo", "Muy de acuerdo")
+
+# Ítems de acuerdo (escala 1-4)
+items_acuerdo <- c("justif_talento", "mindset_inteligencia", "merecen_lo_que_tienen",
+                   "mayor_recomp_esfuerzo", "mayor_recomp_talento",
+                   "bsm_esfuerzo", "bsm_talento", "bsm_merecimiento", "mindset_esfuerzo",
+                   "chile_recomp_esfuerzo", "chile_recomp_inteligencia", "chile_padres_ricos",
+                   "chile_contactos", "chile_igualdad_oportunidades")
+
+set_exp <- set_exp %>%
+  mutate(
+    # Sexo como variable categórica (códigos fuera de 1-3 pasan a NA)
+    sexo = factor(as.numeric(zap_labels(sexo)),
+                  levels = 1:3,
+                  labels = c("Hombre", "Mujer", "Otro")),
+
+    nivel = factor(as.numeric(zap_labels(nivel)),
+                   levels = 1:4,
+                   labels = c("Sexto Básico", "Séptimo Básico",
+                              "Primero Medio", "Segundo Medio")),
+
+    # Ítems de acuerdo (1-4): factores ordenados; 88 y 99 pasan a NA
+    across(all_of(items_acuerdo),
+           ~ factor(as.numeric(zap_labels(.x)),
+                    levels = 1:4,
+                    labels = niveles_acuerdo,
+                    ordered = TRUE)),
+
+    # Escala 1-10: se deja numérica
+    esfuerzo_vs_intel = as.numeric(zap_labels(esfuerzo_vs_intel)),
+
+    # Promedios (1.0-7.0): valores fuera de rango pasan a NA
+    across(c(promedio_notas, promedio_merecido),
+           ~ { x <- as.numeric(zap_labels(.x)); if_else(x >= 1 & x <= 7, x, NA_real_) }),
+
+    # Variables con categorías propias: primero numéricas, luego se etiquetan
+    across(c(promedio_vs_merecido, notas_vs_tiempo, educ_esperada, educ_madre,
+             educ_padre, libros_hogar, mes_nac, anio_nac),
+           ~ as.numeric(zap_labels(.x))),
+
+    # Perfil del DSE con su descripción
+    perfil_label = factor(perfil,
+                          levels = c("A", "B", "C", "D"),
+                          labels = c("A: se esfuerza más, casa pequeña",
+                                     "B: se esfuerza menos, casa grande",
+                                     "C: se esfuerza más, casa grande",
+                                     "D: se esfuerza menos, casa pequeña")),
+
+    # Versiones con etiqueta de los atributos (esfuerzo y talento siguen 0/1 para modelar)
+    esfuerzo_f = factor(esfuerzo, levels = c(0, 1),
+                        labels = c("Se esfuerza menos", "Se esfuerza más")),
+    talento_f  = factor(talento, levels = c(0, 1),
+                        labels = c("Casa pequeña", "Casa grande"))
+  )
+
+# Etiquetado de las variables con categorías propias (88 y 99 pasan a NA)
+set_exp <- set_exp %>%
+  mutate(
+    promedio_vs_merecido = factor(promedio_vs_merecido, levels = 1:3,
+                                  labels = c("Menos de lo que merecía",
+                                             "Lo que merecía",
+                                             "Más de lo que merecía"),
+                                  ordered = TRUE),
+
+    notas_vs_tiempo = factor(notas_vs_tiempo, levels = 1:3,
+                             labels = c("Menos de lo que merezco",
+                                        "Lo que merezco",
+                                        "Más de lo que merezco"),
+                             ordered = TRUE),
+
+    educ_esperada = factor(educ_esperada, levels = 1:3,
+                           labels = c("Educación Media",
+                                      "Instituto profesional o CFT",
+                                      "Carrera universitaria"),
+                           ordered = TRUE),
+
+    across(c(educ_madre, educ_padre),
+           ~ factor(.x, levels = 1:6,
+                    labels = c("No terminó básica",
+                               "Básica completa",
+                               "Media completa",
+                               "Instituto profesional o CFT completo",
+                               "Universidad completa",
+                               "Posgrado"),
+                    ordered = TRUE)),
+
+    libros_hogar = factor(libros_hogar, levels = 1:6,
+                          labels = c("0-10", "11-25", "26-100",
+                                     "100-200", "201-500", "Más de 500"),
+                          ordered = TRUE),
+
+    mes_nac = factor(mes_nac, levels = 1:12,
+                     labels = c("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                                "Julio", "Agosto", "Septiembre", "Octubre",
+                                "Noviembre", "Diciembre"))
+  )
+```
+
+### Revisión de categorías de respuesta
+
+Estas revisiones no se ejecutan al renderizar (`eval: false`). Cámbialo a `true` para verlas.
+
+```{r}
+#| label: revisar-categorias
+#| eval: false
+
+pendientes <- c("p5_o2", "p7_o2", "p16_o2", "p17_o2", "p18_o2", "p19_o2", "p15_mes_o2")
+map(db_students_w02[pendientes], ~ attr(.x, "labels"))
+db_students_w02 %>% select(all_of(pendientes)) %>% map(~ table(.x, useNA = "ifany"))
+
+# Ítems de acuerdo nuevos: se asume 1-4 (88 y 99 = NA)
+db_students_w02 %>%
+  select(p1_1_o2:p1_4_o2, p1_9_o2, p2_1_o2:p2_3_o2, p8_1_o2) %>%
+  map(~ table(.x, useNA = "ifany"))
+```
+
+### Centrado de las variables de nivel 1 y medias de clúster
+
+Las variables de nivel 1 son los atributos del perfil (`esfuerzo` y `talento`). El clúster es el estudiante (`id_estudiante`). Se calculan:
+
+- **Media del clúster** (`_cm`): proporción de perfiles con el atributo dentro de cada estudiante.
+- **Centrado a la media global, GMC** (`_gmc`): el atributo menos su media en toda la muestra.
+- **Centrado a la media del clúster, CWC** (`_cwc`): el atributo menos la media de su estudiante. Se crea solo para comprobar que coincide con el GMC.
+
+```{r}
+#| label: centrado-nivel1
+
+set_exp <- set_exp %>%
+  group_by(id_estudiante) %>%
+  mutate(
+    esfuerzo_cm = mean(esfuerzo, na.rm = TRUE),   # media del clúster (estudiante)
+    talento_cm  = mean(talento,  na.rm = TRUE)
+  ) %>%
+  ungroup() %>%
+  mutate(
+    # Centrado a la media global
+    esfuerzo_gmc = esfuerzo - mean(esfuerzo, na.rm = TRUE),
+    talento_gmc  = talento  - mean(talento,  na.rm = TRUE),
+
+    # Centrado a la media del clúster (para verificar)
+    esfuerzo_cwc = esfuerzo - esfuerzo_cm,
+    talento_cwc  = talento  - talento_cm
+  )
+```
+
+Como cada estudiante evalúa los cuatro perfiles, la media del clúster es constante (0,5) y el GMC es idéntico al CWC. Se verifica a continuación (`eval: false`).
+
+```{r}
+#| label: verifica-centrado
+#| eval: false
+
+# Media de clúster: debe valer 0.5 para todos los estudiantes
+set_exp %>% distinct(id_estudiante, esfuerzo_cm, talento_cm) %>%
+  summarise(across(c(esfuerzo_cm, talento_cm), list(min = min, max = max)))
+
+# GMC y CWC deben ser idénticos
+all.equal(set_exp$esfuerzo_gmc, set_exp$esfuerzo_cwc)
+all.equal(set_exp$talento_gmc,  set_exp$talento_cwc)
+
+# Valores que toman las variables centradas (deben ser -0.5 y 0.5)
+set_exp %>% count(esfuerzo, esfuerzo_gmc, talento, talento_gmc)
+```
+
+
+### Versiones numéricas de los moderadores (nivel 2)
+
+```{r}
+#| label: versiones-numericas
+
+# Ítems de acuerdo a numérico (1 = Muy en desacuerdo ... 4 = Muy de acuerdo)
+set_exp_num <- set_exp %>%
+  mutate(across(all_of(items_acuerdo), ~ as.numeric(.x), .names = "{.col}_n"))
+
+# Versión con actitudes centradas en su promedio
+set_exp_c <- set_exp_num %>%
+  mutate(across(c(mayor_recomp_esfuerzo_n, justif_talento_n, mindset_inteligencia_n),
+                ~ .x - mean(.x, na.rm = TRUE), .names = "{.col}_c"))
+
+# Versiones numéricas de las variables ordinales de los bloques II y V
+set_exp_c <- set_exp_c %>%
+  mutate(across(c(promedio_vs_merecido, notas_vs_tiempo, educ_esperada,
+                  educ_madre, educ_padre, libros_hogar),
+                ~ as.numeric(.x), .names = "{.col}_n"))
+```
+
+## Descriptivos del resultado binario
+
+Cada estudiante tiene cuatro filas y reparte 10 décimas, así que el número de perfiles que aprueba varía entre estudiantes. Esto permite incluir un intercepto aleatorio y estimar efectos principales de los moderadores.
+
+```{r}
+#| label: descriptivos-aprueba
+
+# % de perfiles que aprueban (3 o más décimas), por perfil
+set_exp_c %>%
+  group_by(perfil_label) %>%
+  summarise(n = n(), pct_aprueba = mean(aprueba) * 100, .groups = "drop")
+
+# Cuántos perfiles aprueba cada estudiante
+set_exp_c %>%
+  group_by(id_estudiante) %>%
+  summarise(n_aprobados = sum(aprueba), .groups = "drop") %>%
+  count(n_aprobados)
+```
+
+## Modelos base
+
+Modelo logístico multinivel con intercepto aleatorio por estudiante. Con solo cuatro observaciones binarias por estudiante, las pendientes aleatorias de esfuerzo y talento no se identifican, así que no se incluyen. Los atributos del perfil están centrados a la media global.
+
+```{r}
+#| label: modelos-base-binarios
+
+
+# Modelo nulo
+b_nulo <- glmer(aprueba ~ 1 + (1 | id_estudiante),
+                family = binomial, data = set_exp_c)
+b_nulo
+# Atributos del perfil centrados
+b_base <- glmer(aprueba ~ esfuerzo_gmc * talento_gmc + (1 | id_estudiante),
+                family = binomial, data = set_exp_c)
+
+summary(b_nulo)
+summary(b_base)
+```
+
+## Modelos logísticos multinivel por bloque
+
+En cada modelo, la variable de nivel 2 está en su escala original (sin centrar) y los atributos del perfil están centrados. Cada modelo incluye el moderador, su interacción con esfuerzo y su interacción con talento, más un intercepto aleatorio por estudiante. Como el número de perfiles aprobados sí varía entre estudiantes, el efecto principal del moderador es estimable e interpretable. Los coeficientes están en log-odds.
+
+### Bloque I: BSM y atribución causal del logro
+
+```{r}
+#| label: binario-multinivel-bloque-I
+
+b_bsm_esfuerzo <- glmer(
+  aprueba ~ esfuerzo_gmc * talento_gmc +
+    esfuerzo_gmc * bsm_esfuerzo_n +
+    talento_gmc  * bsm_esfuerzo_n +
+    (1 | id_estudiante),
+  family = binomial, data = set_exp_c, control = ctrl_b)
+
+b_bsm_talento <- glmer(
+  aprueba ~ esfuerzo_gmc * talento_gmc +
+    esfuerzo_gmc * bsm_talento_n +
+    talento_gmc  * bsm_talento_n +
+    (1 | id_estudiante),
+  family = binomial, data = set_exp_c, control = ctrl_b)
+
+b_bsm_merecimiento <- glmer(
+  aprueba ~ esfuerzo_gmc * talento_gmc +
+    esfuerzo_gmc * bsm_merecimiento_n +
+    talento_gmc  * bsm_merecimiento_n +
+    (1 | id_estudiante),
+  family = binomial, data = set_exp_c, control = ctrl_b)
+
+b_esfuerzo_vs_intel <- glmer(
+  aprueba ~ esfuerzo_gmc * talento_gmc +
+    esfuerzo_gmc * esfuerzo_vs_intel +
+    talento_gmc  * esfuerzo_vs_intel +
+    (1 | id_estudiante),
+  family = binomial, data = set_exp_c, control = ctrl_b)
+
+screenreg(
+  list(b_bsm_esfuerzo, b_bsm_talento, b_bsm_merecimiento, b_esfuerzo_vs_intel),
+  digits = 3,
+  stars  = c(0.001, 0.01, 0.05),
+  custom.model.names = c("BSM esfuerzo", "BSM talento", "BSM merecimiento", "Esfuerzo vs. inteligencia")
+)
+```
+
+### Bloque II: experiencia evaluativa personal
+
+```{r}
+#| label: binario-multinivel-bloque-II
+
+b_promedio_notas <- glmer(
+  aprueba ~ esfuerzo_gmc * talento_gmc +
+    esfuerzo_gmc * promedio_notas +
+    talento_gmc  * promedio_notas +
+    (1 | id_estudiante),
+  family = binomial, data = set_exp_c, control = ctrl_b)
+
+b_promedio_vs_merecido <- glmer(
+  aprueba ~ esfuerzo_gmc * talento_gmc +
+    esfuerzo_gmc * promedio_vs_merecido_n +
+    talento_gmc  * promedio_vs_merecido_n +
+    (1 | id_estudiante),
+  family = binomial, data = set_exp_c, control = ctrl_b)
+
+b_notas_vs_tiempo <- glmer(
+  aprueba ~ esfuerzo_gmc * talento_gmc +
+    esfuerzo_gmc * notas_vs_tiempo_n +
+    talento_gmc  * notas_vs_tiempo_n +
+    (1 | id_estudiante),
+  family = binomial, data = set_exp_c, control = ctrl_b)
+
+screenreg(
+  list(b_promedio_notas, b_promedio_vs_merecido, b_notas_vs_tiempo),
+  digits = 3,
+  stars  = c(0.001, 0.01, 0.05),
+  custom.model.names = c("Promedio notas", "Promedio vs. merecido", "Notas vs. tiempo")
+)
+```
+
+### Bloque III: teorías implícitas
+
+```{r}
+#| label: binario-multinivel-bloque-III
+
+b_mindset_esfuerzo <- glmer(
+  aprueba ~ esfuerzo_gmc * talento_gmc +
+    esfuerzo_gmc * mindset_esfuerzo_n +
+    talento_gmc  * mindset_esfuerzo_n +
+    (1 | id_estudiante),
+  family = binomial, data = set_exp_c, control = ctrl_b)
+
+b_mindset_inteligencia <- glmer(
+  aprueba ~ esfuerzo_gmc * talento_gmc +
+    esfuerzo_gmc * mindset_inteligencia_n +
+    talento_gmc  * mindset_inteligencia_n +
+    (1 | id_estudiante),
+  family = binomial, data = set_exp_c, control = ctrl_b)
+
+screenreg(
+  list(b_mindset_esfuerzo, b_mindset_inteligencia),
+  digits = 3,
+  stars  = c(0.001, 0.01, 0.05),
+  custom.model.names = c("Mindset esfuerzo", "Mindset inteligencia")
+)
+```
+
+### Bloque IV: percepciones descriptivas de Chile
+
+```{r}
+#| label: binario-multinivel-bloque-IV
+
+b_chile_recomp_esfuerzo <- glmer(
+  aprueba ~ esfuerzo_gmc * talento_gmc +
+    esfuerzo_gmc * chile_recomp_esfuerzo_n +
+    talento_gmc  * chile_recomp_esfuerzo_n +
+    (1 | id_estudiante),
+  family = binomial, data = set_exp_c, control = ctrl_b)
+
+b_chile_recomp_inteligencia <- glmer(
+  aprueba ~ esfuerzo_gmc * talento_gmc +
+    esfuerzo_gmc * chile_recomp_inteligencia_n +
+    talento_gmc  * chile_recomp_inteligencia_n +
+    (1 | id_estudiante),
+  family = binomial, data = set_exp_c, control = ctrl_b)
+
+b_chile_padres_ricos <- glmer(
+  aprueba ~ esfuerzo_gmc * talento_gmc +
+    esfuerzo_gmc * chile_padres_ricos_n +
+    talento_gmc  * chile_padres_ricos_n +
+    (1 | id_estudiante),
+  family = binomial, data = set_exp_c, control = ctrl_b)
+
+b_chile_contactos <- glmer(
+  aprueba ~ esfuerzo_gmc * talento_gmc +
+    esfuerzo_gmc * chile_contactos_n +
+    talento_gmc  * chile_contactos_n +
+    (1 | id_estudiante),
+  family = binomial, data = set_exp_c, control = ctrl_b)
+
+b_chile_igualdad_oportunidades <- glmer(
+  aprueba ~ esfuerzo_gmc * talento_gmc +
+    esfuerzo_gmc * chile_igualdad_oportunidades_n +
+    talento_gmc  * chile_igualdad_oportunidades_n +
+    (1 | id_estudiante),
+  family = binomial, data = set_exp_c, control = ctrl_b)
+
+b_merecen_lo_que_tienen <- glmer(
+  aprueba ~ esfuerzo_gmc * talento_gmc +
+    esfuerzo_gmc * merecen_lo_que_tienen_n +
+    talento_gmc  * merecen_lo_que_tienen_n +
+    (1 | id_estudiante),
+  family = binomial, data = set_exp_c, control = ctrl_b)
+
+screenreg(
+  list(b_chile_recomp_esfuerzo, b_chile_recomp_inteligencia, b_chile_padres_ricos, b_chile_contactos, b_chile_igualdad_oportunidades, b_merecen_lo_que_tienen),
+  digits = 3,
+  stars  = c(0.001, 0.01, 0.05),
+  custom.model.names = c("Chile: recompensas por esfuerzo", "Chile: recompensas por inteligencia", "Chile: padres ricos", "Chile: buenos contactos", "Chile: igualdad de oportunidades", "Chile: merecen lo que tienen")
+)
+```
+
+### Bloque V: NSE, capital cultural y demografía
+
+```{r}
+#| label: binario-multinivel-bloque-V
+
+b_educ_madre <- glmer(
+  aprueba ~ esfuerzo_gmc * talento_gmc +
+    esfuerzo_gmc * educ_madre_n +
+    talento_gmc  * educ_madre_n +
+    (1 | id_estudiante),
+  family = binomial, data = set_exp_c, control = ctrl_b)
+
+b_educ_padre <- glmer(
+  aprueba ~ esfuerzo_gmc * talento_gmc +
+    esfuerzo_gmc * educ_padre_n +
+    talento_gmc  * educ_padre_n +
+    (1 | id_estudiante),
+  family = binomial, data = set_exp_c, control = ctrl_b)
+
+b_libros_hogar <- glmer(
+  aprueba ~ esfuerzo_gmc * talento_gmc +
+    esfuerzo_gmc * libros_hogar_n +
+    talento_gmc  * libros_hogar_n +
+    (1 | id_estudiante),
+  family = binomial, data = set_exp_c, control = ctrl_b)
+
+b_educ_esperada <- glmer(
+  aprueba ~ esfuerzo_gmc * talento_gmc +
+    esfuerzo_gmc * educ_esperada_n +
+    talento_gmc  * educ_esperada_n +
+    (1 | id_estudiante),
+  family = binomial, data = set_exp_c, control = ctrl_b)
+
+b_sexo <- glmer(
+  aprueba ~ esfuerzo_gmc * talento_gmc +
+    esfuerzo_gmc * sexo +
+    talento_gmc  * sexo +
+    (1 | id_estudiante),
+  family = binomial, data = set_exp_c, control = ctrl_b)
+
+b_nivel <- glmer(
+  aprueba ~ esfuerzo_gmc * talento_gmc +
+    esfuerzo_gmc * nivel +
+    talento_gmc  * nivel +
+    (1 | id_estudiante),
+  family = binomial, data = set_exp_c, control = ctrl_b)
+
+screenreg(
+  list(b_educ_madre, b_educ_padre, b_libros_hogar, b_educ_esperada, b_sexo, b_nivel),
+  digits = 3,
+  stars  = c(0.001, 0.01, 0.05),
+  custom.model.names = c("Educación madre", "Educación padre", "Libros en el hogar", "Educación esperada", "Sexo", "Nivel")
+)
+```
+
+## Modelos logísticos con errores estándar agrupados por estudiante
+
+Regresiones logísticas con esfuerzo y talento sin centrar (0/1), los moderadores en su escala original y errores estándar agrupados por estudiante. Los coeficientes están en log-odds y son comparables con los de los modelos multinivel en la dirección y la significancia, no en la magnitud: los modelos multinivel estiman efectos condicionales al estudiante, y estos, efectos promedio de la población.
+
+### Modelos
+
+#### Bloque I: BSM y atribución causal del logro
+
+```{r}
+#| label: binario-cluster-bloque-I
+
+bcl_bsm_esfuerzo <- glm(
+  aprueba ~ esfuerzo * talento +
+    esfuerzo * bsm_esfuerzo_n +
+    talento  * bsm_esfuerzo_n,
+  family = binomial, data = set_exp_c)
+
+bcl_bsm_talento <- glm(
+  aprueba ~ esfuerzo * talento +
+    esfuerzo * bsm_talento_n +
+    talento  * bsm_talento_n,
+  family = binomial, data = set_exp_c)
+
+bcl_bsm_merecimiento <- glm(
+  aprueba ~ esfuerzo * talento +
+    esfuerzo * bsm_merecimiento_n +
+    talento  * bsm_merecimiento_n,
+  family = binomial, data = set_exp_c)
+
+bcl_esfuerzo_vs_intel <- glm(
+  aprueba ~ esfuerzo * talento +
+    esfuerzo * esfuerzo_vs_intel +
+    talento  * esfuerzo_vs_intel,
+  family = binomial, data = set_exp_c)
+
+```
+
+#### Bloque II: experiencia evaluativa personal
+
+```{r}
+#| label: binario-cluster-bloque-II
+
+bcl_promedio_notas <- glm(
+  aprueba ~ esfuerzo * talento +
+    esfuerzo * promedio_notas +
+    talento  * promedio_notas,
+  family = binomial, data = set_exp_c)
+
+bcl_promedio_vs_merecido <- glm(
+  aprueba ~ esfuerzo * talento +
+    esfuerzo * promedio_vs_merecido_n +
+    talento  * promedio_vs_merecido_n,
+  family = binomial, data = set_exp_c)
+
+bcl_notas_vs_tiempo <- glm(
+  aprueba ~ esfuerzo * talento +
+    esfuerzo * notas_vs_tiempo_n +
+    talento  * notas_vs_tiempo_n,
+  family = binomial, data = set_exp_c)
+
+```
+
+#### Bloque III: teorías implícitas
+
+```{r}
+#| label: binario-cluster-bloque-III
+
+bcl_mindset_esfuerzo <- glm(
+  aprueba ~ esfuerzo * talento +
+    esfuerzo * mindset_esfuerzo_n +
+    talento  * mindset_esfuerzo_n,
+  family = binomial, data = set_exp_c)
+
+bcl_mindset_inteligencia <- glm(
+  aprueba ~ esfuerzo * talento +
+    esfuerzo * mindset_inteligencia_n +
+    talento  * mindset_inteligencia_n,
+  family = binomial, data = set_exp_c)
+
+```
+
+#### Bloque IV: percepciones descriptivas de Chile
+
+```{r}
+#| label: binario-cluster-bloque-IV
+
+bcl_chile_recomp_esfuerzo <- glm(
+  aprueba ~ esfuerzo * talento +
+    esfuerzo * chile_recomp_esfuerzo_n +
+    talento  * chile_recomp_esfuerzo_n,
+  family = binomial, data = set_exp_c)
+
+bcl_chile_recomp_inteligencia <- glm(
+  aprueba ~ esfuerzo * talento +
+    esfuerzo * chile_recomp_inteligencia_n +
+    talento  * chile_recomp_inteligencia_n,
+  family = binomial, data = set_exp_c)
+
+bcl_chile_padres_ricos <- glm(
+  aprueba ~ esfuerzo * talento +
+    esfuerzo * chile_padres_ricos_n +
+    talento  * chile_padres_ricos_n,
+  family = binomial, data = set_exp_c)
+
+bcl_chile_contactos <- glm(
+  aprueba ~ esfuerzo * talento +
+    esfuerzo * chile_contactos_n +
+    talento  * chile_contactos_n,
+  family = binomial, data = set_exp_c)
+
+bcl_chile_igualdad_oportunidades <- glm(
+  aprueba ~ esfuerzo * talento +
+    esfuerzo * chile_igualdad_oportunidades_n +
+    talento  * chile_igualdad_oportunidades_n,
+  family = binomial, data = set_exp_c)
+
+bcl_merecen_lo_que_tienen <- glm(
+  aprueba ~ esfuerzo * talento +
+    esfuerzo * merecen_lo_que_tienen_n +
+    talento  * merecen_lo_que_tienen_n,
+  family = binomial, data = set_exp_c)
+
+```
+
+#### Bloque V: NSE, capital cultural y demografía
+
+```{r}
+#| label: binario-cluster-bloque-V
+
+bcl_educ_madre <- glm(
+  aprueba ~ esfuerzo * talento +
+    esfuerzo * educ_madre_n +
+    talento  * educ_madre_n,
+  family = binomial, data = set_exp_c)
+
+bcl_educ_padre <- glm(
+  aprueba ~ esfuerzo * talento +
+    esfuerzo * educ_padre_n +
+    talento  * educ_padre_n,
+  family = binomial, data = set_exp_c)
+
+bcl_libros_hogar <- glm(
+  aprueba ~ esfuerzo * talento +
+    esfuerzo * libros_hogar_n +
+    talento  * libros_hogar_n,
+  family = binomial, data = set_exp_c)
+
+bcl_educ_esperada <- glm(
+  aprueba ~ esfuerzo * talento +
+    esfuerzo * educ_esperada_n +
+    talento  * educ_esperada_n,
+  family = binomial, data = set_exp_c)
+
+bcl_sexo <- glm(
+  aprueba ~ esfuerzo * talento +
+    esfuerzo * sexo +
+    talento  * sexo,
+  family = binomial, data = set_exp_c)
+
+bcl_nivel <- glm(
+  aprueba ~ esfuerzo * talento +
+    esfuerzo * nivel +
+    talento  * nivel,
+  family = binomial, data = set_exp_c)
+
+```
+
+### Tablas con errores estándar agrupados
+
+La función calcula los errores estándar y los valores p agrupados por estudiante con `vcovCL` y agrega el número de estudiantes de cada modelo.
+
+```{r}
+#| label: binario-cluster-funcion
+
+screenreg_cl <- function(modelos, nombres) {
+
+  # Errores estándar y valores p agrupados por estudiante
+  ct <- lapply(modelos, function(m)
+    coeftest(m, vcov = vcovCL(m, cluster = ~id_estudiante)))
+
+  # Número de estudiantes en la muestra de cada modelo
+  n_est <- sapply(modelos, function(m)
+    n_distinct(set_exp_c$id_estudiante[as.numeric(rownames(model.frame(m)))]))
+
+  screenreg(
+    modelos,
+    override.se        = lapply(ct, function(x) x[, 2]),
+    override.pvalues   = lapply(ct, function(x) x[, 4]),
+    custom.model.names = nombres,
+    custom.gof.rows    = list("Estudiantes" = n_est),
+    digits             = 3,
+    stars              = c(0.001, 0.01, 0.05)
+  )
+}
+```
+
+#### Bloque I
+
+```{r}
+#| label: binario-cluster-tabla-I
+
+screenreg_cl(
+  list(bcl_bsm_esfuerzo, bcl_bsm_talento, bcl_bsm_merecimiento, bcl_esfuerzo_vs_intel),
+  c("BSM esfuerzo", "BSM talento", "BSM merecimiento", "Esfuerzo vs. inteligencia")
+)
+```
+
+#### Bloque II
+
+```{r}
+#| label: binario-cluster-tabla-II
+
+screenreg_cl(
+  list(bcl_promedio_notas, bcl_promedio_vs_merecido, bcl_notas_vs_tiempo),
+  c("Promedio notas", "Promedio vs. merecido", "Notas vs. tiempo")
+)
+```
+
+#### Bloque III
+
+```{r}
+#| label: binario-cluster-tabla-III
+
+screenreg_cl(
+  list(bcl_mindset_esfuerzo, bcl_mindset_inteligencia),
+  c("Mindset esfuerzo", "Mindset inteligencia")
+)
+```
+
+#### Bloque IV
+
+```{r}
+#| label: binario-cluster-tabla-IV
+
+screenreg_cl(
+  list(bcl_chile_recomp_esfuerzo, bcl_chile_recomp_inteligencia, bcl_chile_padres_ricos, bcl_chile_contactos, bcl_chile_igualdad_oportunidades, bcl_merecen_lo_que_tienen),
+  c("Chile: recompensas por esfuerzo", "Chile: recompensas por inteligencia", "Chile: padres ricos", "Chile: buenos contactos", "Chile: igualdad de oportunidades", "Chile: merecen lo que tienen")
+)
+```
+
+#### Bloque V
+
+```{r}
+#| label: binario-cluster-tabla-V
+
+screenreg_cl(
+  list(bcl_educ_madre, bcl_educ_padre, bcl_libros_hogar, bcl_educ_esperada, bcl_sexo, bcl_nivel),
+  c("Educación madre", "Educación padre", "Libros en el hogar", "Educación esperada", "Sexo", "Nivel")
+)
+```

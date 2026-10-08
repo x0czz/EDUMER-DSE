@@ -23,7 +23,583 @@ div[data-when-format="pdf"] { display: none !important; }
 <span class="keywords-line"><strong>Palabras clave:</strong> sociología, educación, Chile</span>
 :::
 
-# Abstract {.unnumbered}
+```{r}
+#| label: setup
+#| include: false
 
-Resumen en español (200-300). Expón propósito, método, resultados clave y conclusiones.
-Puede incluir citas como @xie2017bookdown y se actualizarán automáticamente.
+library(tidyverse)
+library(haven)
+library(summarytools)
+library(lme4)
+library(lmerTest)
+library(emmeans)
+library(modelsummary)
+library(knitr)
+
+options(scipen = 999)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+# Propuesta de análisis del DSE
+
+## Diseño del experimento
+
+El experimento distribucional de encuesta (*distributional survey experiment*, DSE) [@gilgen2020] se aplicó en la segunda ola de EDUMER. En su última tarea, cada estudiante dispone de 10 décimas que debe distribuir entre cuatro compañeros ficticios, todos con la misma nota (3,7). Los perfiles resultan de cruzar dos atributos manipulados experimentalmente: el **esfuerzo** (se esfuerza más o menos que la mayoría) y el **talento**, entendido como las condiciones que escapan al control del individuo y operacionalizado mediante las condiciones materiales de estudio en el hogar (casa grande, con espacio cómodo para estudiar, o casa pequeña, sin él). Se trata, por tanto, de un diseño factorial 2×2, en el que cada participante evalúa las cuatro combinaciones posibles.
+
+Dado que la presentación de los atributos es controlada por el diseño y todos los perfiles comparten la misma nota, las diferencias en las décimas asignadas pueden atribuirse a los atributos manipulados y no a otras características de los perfiles. La variable dependiente es el número de décimas asignadas a cada perfil, por lo que el análisis busca capturar preferencias distributivas (cuánta recompensa escolar se considera justa para cada perfil) y no el desempeño académico de los estudiantes.
+
+## Reorganización de los datos
+
+Los datos originales se reestructuran de modo que a cada asignación se le incorporan dos variables binarias que reflejan los atributos del perfil evaluado:
+
+- **Esfuerzo**: 1 = se esfuerza más que la mayoría; 0 = se esfuerza menos.
+- **Talento**: 1 = casa grande, con espacio cómodo para estudiar; 0 = casa pequeña, sin espacio cómodo.
+
+La @tbl-codificacion presenta la correspondencia entre la redacción original de cada perfil y las nuevas variables.
+
+| Perfil | Redacción original | Esfuerzo | Talento |
+|:------:|:-------------------|:--------:|:-------:|
+| A | Se esfuerza más que la mayoría. Su casa es pequeña, no tiene un espacio cómodo para estudiar | 1 | 0 |
+| B | Se esfuerza menos que la mayoría. Su casa es grande, tiene un espacio cómodo para estudiar | 0 | 1 |
+| C | Se esfuerza más que la mayoría. Su casa es grande, tiene un espacio cómodo para estudiar | 1 | 1 |
+| D | Se esfuerza menos que la mayoría. Su casa es pequeña, no tiene un espacio cómodo para estudiar | 0 | 0 |
+
+: Codificación de los atributos de los perfiles del DSE {#tbl-codificacion}
+
+Con esta estructura, cada estudiante pasa de una fila con cuatro columnas a cuatro filas, y la suma de décimas por estudiante es siempre 10. La @tbl-estructura ilustra la base reorganizada con dos estudiantes (los valores de décimas son ilustrativos).
+
+| id_estudiante | perfil | esfuerzo | talento | décimas |
+|:-------------:|:------:|:--------:|:-------:|:-------:|
+| 1 | A | 1 | 0 | 4 |
+| 1 | B | 0 | 1 | 1 |
+| 1 | C | 1 | 1 | 4 |
+| 1 | D | 0 | 0 | 1 |
+| 2 | A | 1 | 0 | 3 |
+| 2 | B | 0 | 1 | 2 |
+| 2 | C | 1 | 1 | 3 |
+| 2 | D | 0 | 0 | 2 |
+
+: Ejemplo de estructura de datos reorganizada (formato largo) {#tbl-estructura}
+
+## Preparación de los datos
+
+### Carga y formato largo
+
+```{r}
+#| label: carga-datos
+
+load("input/db_proc_students_w02.RData")
+
+# Formato ancho: décimas numéricas y total repartido
+dse_wide <- db_students_w02 %>%
+  mutate(
+    across(starts_with("exp_t4_"), ~ as.numeric(zap_labels(.x))),
+    total_decimas = rowSums(across(starts_with("exp_t4_")), na.rm = FALSE)
+  )
+
+# Formato largo: una fila por estudiante-perfil
+dse <- dse_wide %>%
+  filter(total_decimas == 10) %>%                 # repartos completos que suman 10
+  select(-matches("^exp_t[123]_")) %>%            # se mantienen las demás variables (nivel 2)
+  pivot_longer(
+    cols         = starts_with("exp_t4_"),
+    names_to     = "perfil",
+    names_prefix = "exp_t4_",
+    values_to    = "decimas"
+  ) %>%
+  mutate(
+    perfil   = toupper(perfil),
+    # Esfuerzo: 1 = se esfuerza más que la mayoría; 0 = se esfuerza menos
+    esfuerzo = if_else(perfil %in% c("A", "C"), 1L, 0L),
+    # Talento (condiciones no controlables): 1 = casa grande; 0 = casa pequeña
+    talento  = if_else(perfil %in% c("B", "C"), 1L, 0L),
+    # Variable binaria complementaria: 3 o más décimas permiten aprobar (3,7 -> 4,0)
+    aprueba  = if_else(decimas >= 3, 1L, 0L),
+    # Curso único: la etiqueta del curso (d3_def_o1) se repite entre colegios (d2_o2)
+    curso_id = interaction(d2_o2, d3_def_o1, drop = TRUE)
+  ) %>%
+  arrange(id_estudiante, perfil)
+```
+
+### Selección y etiquetado de variables
+
+```{r}
+#| label: variables-labels
+
+set_exp <- dse %>%
+  select(
+    id_estudiante,
+    curso_id,
+    perfil,
+    esfuerzo,
+    talento,
+    decimas,
+    sexo                  = p14_o2,
+    nivel                 = nivel_estudiante_o2,
+    justif_talento        = p9_6_o2,    # está bien que los más inteligentes/talentosos ganen más
+    mindset_inteligencia  = p8_2_o2,    # las personas pueden ser más inteligentes si lo intentan
+    esfuerzo_vs_intel     = p3_o2,      # 1 = esfuerzo ... 10 = inteligencia
+    merecen_lo_que_tienen = p1_10_o2,   # en Chile, todas las personas obtienen lo que merecen
+    mayor_recomp_esfuerzo = p1_5_o2,    # quienes más se esfuerzan deberían obtener mayores recompensas
+    mayor_recomp_talento  = p1_6_o2     # quienes poseen más talento deberían obtener mayores recompensas
+  )
+
+niveles_acuerdo <- c("Muy en desacuerdo", "En desacuerdo", "De acuerdo", "Muy de acuerdo")
+
+set_exp <- set_exp %>%
+  mutate(
+    # Sexo como variable categórica (códigos fuera de 1-3 pasan a NA)
+    sexo = factor(as.numeric(zap_labels(sexo)),
+                  levels = 1:3,
+                  labels = c("Hombre", "Mujer", "Otro")),
+
+    nivel = factor(as.numeric(zap_labels(nivel)),
+                   levels = 1:4,
+                   labels = c("Sexto Básico", "Séptimo Básico",
+                              "Primero Medio", "Segundo Medio")),
+
+    # Ítems de acuerdo (1-4): factores ordenados; 88 y 99 pasan a NA
+    across(c(justif_talento, mindset_inteligencia, merecen_lo_que_tienen,
+             mayor_recomp_esfuerzo, mayor_recomp_talento),
+           ~ factor(as.numeric(zap_labels(.x)),
+                    levels = 1:4,
+                    labels = niveles_acuerdo,
+                    ordered = TRUE)),
+
+    # Escala 1-10: se deja numérica
+    esfuerzo_vs_intel = as.numeric(zap_labels(esfuerzo_vs_intel)),
+
+    # Perfil del DSE con su descripción
+    perfil_label = factor(perfil,
+                          levels = c("A", "B", "C", "D"),
+                          labels = c("A: se esfuerza más, casa pequeña",
+                                     "B: se esfuerza menos, casa grande",
+                                     "C: se esfuerza más, casa grande",
+                                     "D: se esfuerza menos, casa pequeña")),
+
+    # Versiones con etiqueta de los atributos (esfuerzo y talento siguen 0/1 para modelar)
+    esfuerzo_f = factor(esfuerzo, levels = c(0, 1),
+                        labels = c("Se esfuerza menos", "Se esfuerza más")),
+    talento_f  = factor(talento, levels = c(0, 1),
+                        labels = c("Casa pequeña", "Casa grande"))
+  )
+
+# Ítems de acuerdo a numérico (1 = Muy en desacuerdo ... 4 = Muy de acuerdo)
+set_exp_num <- set_exp %>%
+  mutate(across(c(justif_talento, mindset_inteligencia, merecen_lo_que_tienen,
+                  mayor_recomp_esfuerzo, mayor_recomp_talento),
+                ~ as.numeric(.x), .names = "{.col}_n"))
+
+# Versión con actitudes centradas en su promedio (para los modelos finales)
+set_exp_c <- set_exp_num %>%
+  mutate(across(c(mayor_recomp_esfuerzo_n, justif_talento_n, mindset_inteligencia_n),
+                ~ .x - mean(.x, na.rm = TRUE), .names = "{.col}_c"))
+```
+
+### Verificaciones de la estructura
+
+Estas revisiones no se ejecutan al renderizar (`eval: false`). Cámbialo a `true` si quieres ver sus resultados en el documento.
+
+```{r}
+#| label: verificaciones
+#| eval: false
+
+colnames(db_students_w02)
+
+# Distribución de décimas por perfil (incluye NA y valores fuera de rango)
+db_students_w02 %>% select(starts_with("exp_t4_")) %>% summary()
+db_students_w02 %>% select(starts_with("exp_t4_")) %>% map(~ table(.x, useNA = "ifany"))
+
+# Cuántos estudiantes reparten exactamente 10 décimas
+table(dse_wide$total_decimas, useNA = "ifany")
+
+# Cada estudiante debe tener exactamente 4 filas y sumar 10 décimas
+dse %>% count(id_estudiante) %>% count(n)
+dse %>% group_by(id_estudiante) %>% summarise(total = sum(decimas)) %>% count(total)
+
+# Combinaciones de atributos
+dse %>% count(perfil, esfuerzo, talento)
+
+# Promedio de décimas y % que aprueba por perfil
+dse %>%
+  group_by(perfil, esfuerzo, talento) %>%
+  summarise(n = n(), media = mean(decimas),
+            pct_aprob = mean(aprueba) * 100, .groups = "drop")
+
+# Estudiantes sin información de curso (no están en la ola 1)
+dse %>% distinct(id_estudiante, curso_id) %>% summarise(sin_curso = sum(is.na(curso_id)))
+
+# Variables con label
+table(set_exp$sexo, useNA = "ifany")
+set_exp %>% count(nivel)
+set_exp %>% count(perfil, perfil_label, esfuerzo_f, talento_f)
+
+# Tamaño de categorías y distribución de los ítems (a nivel de estudiante)
+est <- set_exp_num %>% distinct(id_estudiante, .keep_all = TRUE)
+est %>% count(sexo)
+est %>% count(nivel)
+est %>% select(ends_with("_n")) %>% map(~ table(.x, useNA = "ifany"))
+
+glimpse(set_exp)
+```
+
+## Descripción de los estudiantes
+
+La tabla describe a los estudiantes (nivel 2) con una fila por persona, para que cada uno cuente una sola vez.
+
+```{r}
+#| label: descriptivos-estudiantes
+
+estudiantes <- set_exp %>%
+  distinct(id_estudiante, .keep_all = TRUE) %>%
+  select(sexo, nivel, esfuerzo_vs_intel, justif_talento, mindset_inteligencia,
+         merecen_lo_que_tienen, mayor_recomp_esfuerzo, mayor_recomp_talento)
+
+tabla_estudiantes <- dfSummary(
+  estudiantes,
+  varnumbers   = FALSE,
+  valid.col    = FALSE,
+  graph.magnif = 0.75,
+  na.col       = TRUE
+)
+```
+
+```{r}
+#| label: descriptivos-render
+#| results: asis
+#| echo: false
+#| eval: !expr knitr::is_html_output()
+
+print(tabla_estudiantes, method = "render", headings = FALSE, footnote = NA)
+```
+
+## Consideraciones sobre la estructura de los datos
+
+Dado que cada estudiante distribuye una suma fija de 10 décimas, su promedio individual es constante (2,5). Por lo tanto, no existe varianza entre estudiantes en el promedio de décimas asignadas, y las características de los estudiantes (nivel 2) no pueden predecir directamente cuántas décimas asignan en promedio. Sin embargo, sí pueden explicar diferencias en **cómo distribuyen** las décimas entre los perfiles, es decir, **moderar** el efecto del esfuerzo y del talento. Por ello, las variables de nivel 2 se incorporan únicamente como interacciones entre niveles (*cross-level interactions*) con los atributos del perfil.
+
+## Estrategia de modelado
+
+### Modelo nulo y modelo con los atributos del perfil
+
+```{r}
+#| label: modelos-base
+
+# Modelo nulo
+lme <- lmer(decimas ~ (1 | id_estudiante), data = set_exp)
+lme
+
+# Modelo con los atributos del perfil
+lme1 <- lmer(decimas ~ esfuerzo + talento + (1 | id_estudiante), data = set_exp)
+summary(lme1)
+```
+
+### Pruebas de interacción entre niveles
+
+Se probó cada covariable de nivel 2 en un modelo propio (método 1) y todas a la vez en un solo modelo (método 2).
+
+**Método 1: una covariable por modelo.** Cada covariable aporta tres términos: `esfuerzo:Z`, `talento:Z` y `esfuerzo:talento:Z` (la de tres vías). Las dos primeras responden a las hipótesis, y la tercera es exploratoria.
+
+```{r}
+#| label: metodo-1
+
+covariables <- c("sexo", "nivel",
+                 "justif_talento_n", "mindset_inteligencia_n",
+                 "esfuerzo_vs_intel", "merecen_lo_que_tienen_n",
+                 "mayor_recomp_esfuerzo_n", "mayor_recomp_talento_n")
+
+resultados <- map_dfr(covariables, function(z) {
+  f <- as.formula(paste("decimas ~ esfuerzo * talento *", z, "+ (1 | id_estudiante)"))
+  m <- suppressMessages(lmer(f, data = set_exp_num))
+
+  anova(m) %>%
+    as.data.frame() %>%
+    rownames_to_column("termino") %>%
+    filter(str_detect(termino, paste0(z, ":|:", z))) %>%
+    mutate(covariable = z, n_estudiantes = ngrps(m))
+}) %>%
+  rename(F_valor = `F value`, p = `Pr(>F)`) %>%
+  select(covariable, termino, n_estudiantes, F_valor, p)
+
+resultados
+```
+
+**Descripción de las interacciones significativas (efectos simples).**
+
+```{r}
+#| label: emmeans
+
+# Actitud: premiar el esfuerzo (escala 1-4)
+m_a <- lmer(decimas ~ esfuerzo * talento * mayor_recomp_esfuerzo_n + (1 | id_estudiante),
+            data = set_exp_num)
+emmeans(m_a, ~ esfuerzo | mayor_recomp_esfuerzo_n,
+        at = list(mayor_recomp_esfuerzo_n = 1:4)) %>%
+  contrast("revpairwise")
+
+# Actitud: premiar el talento (escala 1-4), efecto sobre el esfuerzo
+m_b <- lmer(decimas ~ esfuerzo * talento * mayor_recomp_talento_n + (1 | id_estudiante),
+            data = set_exp_num)
+emmeans(m_b, ~ esfuerzo | mayor_recomp_talento_n,
+        at = list(mayor_recomp_talento_n = 1:4)) %>%
+  contrast("revpairwise")
+
+# Sexo
+m_c <- lmer(decimas ~ esfuerzo * talento * sexo + (1 | id_estudiante), data = set_exp_num)
+emmeans(m_c, ~ esfuerzo | sexo) %>% contrast("revpairwise")
+```
+
+**Método 2: un solo modelo con todas las covariables.** Todas las interacciones entran a la vez y se prueban con `anova()` y `drop1()`.
+
+```{r}
+#| label: metodo-2
+
+m_full <- lmer(
+  decimas ~ esfuerzo * talento +
+    (sexo + nivel + justif_talento_n + mindset_inteligencia_n +
+       esfuerzo_vs_intel + merecen_lo_que_tienen_n +
+       mayor_recomp_esfuerzo_n + mayor_recomp_talento_n) * (esfuerzo + talento) +
+    (1 | id_estudiante),
+  data = set_exp_num
+)
+summary(m_full)
+
+# Muestra efectivamente usada (se pierde el estudiante con NA en cualquier covariable)
+nobs(m_full)
+ngrps(m_full)
+
+# Prueba F por término (Satterthwaite)
+anova(m_full)
+
+# Razón de verosimilitud al quitar cada interacción
+drop1(m_full, test = "Chisq")
+```
+
+### Modelos finales
+
+Se estiman dos especificaciones con los atributos del perfil y las cuatro interacciones que resultaron significativas en el modelo completo: una con intercepto aleatorio por estudiante y otra que agrega pendientes aleatorias de esfuerzo y talento. Las actitudes están centradas en su promedio.
+
+```{r}
+#| label: modelos-finales
+
+# Intercepto aleatorio
+m_sig_c <- lmer(
+  decimas ~ esfuerzo + talento +
+    esfuerzo * mayor_recomp_esfuerzo_n_c +
+    esfuerzo * sexo +
+    esfuerzo * justif_talento_n_c +
+    talento  * mindset_inteligencia_n_c +
+    (1 | id_estudiante),
+  data = set_exp_c
+)
+
+# Intercepto y pendientes aleatorias de esfuerzo y talento
+m_sig_c_re <- lmer(
+  decimas ~ esfuerzo + talento +
+    esfuerzo * mayor_recomp_esfuerzo_n_c +
+    esfuerzo * sexo +
+    esfuerzo * justif_talento_n_c +
+    talento  * mindset_inteligencia_n_c +
+    (1 + esfuerzo + talento | id_estudiante),
+  data = set_exp_c
+)
+
+summary(m_sig_c)
+summary(m_sig_c_re)
+```
+
+### Comparación de los modelos
+
+Para comparar modelos que difieren en sus componentes de varianza, ambos se estiman con REML y   se aplica la prueba de razón de verosimilitud sin reestimar (`refit = FALSE`). Esto es válido porque los dos modelos tienen los mismos efectos fijos y los mismos datos.
+
+```{r}
+#| label: comparacion-modelos
+
+# Condiciones para que la comparación sea válida
+isREML(m_sig_c)
+isREML(m_sig_c_re)
+nobs(m_sig_c) == nobs(m_sig_c_re)
+formula(m_sig_c, fixed.only = TRUE)
+formula(m_sig_c_re, fixed.only = TRUE)
+
+# Prueba de razón de verosimilitud (manteniendo REML)
+anova(m_sig_c, m_sig_c_re, refit = FALSE)
+```
+
+## Resultados
+
+```{r}
+#| label: setup-tablas
+#| echo: false
+
+coef_etiquetas <- c(
+  "(Intercept)"                        = "Intercepto (perfil D)",
+  "esfuerzo"                           = "Esfuerzo",
+  "talento"                            = "Talento (casa grande)",
+  "mayor_recomp_esfuerzo_n_c"          = "Actitud: premiar el esfuerzo",
+  "sexoMujer"                          = "Sexo: Mujer",
+  "sexoOtro"                           = "Sexo: Otro",
+  "justif_talento_n_c"                 = "Justificación del talento",
+  "mindset_inteligencia_n_c"           = "Mindset de inteligencia",
+  "esfuerzo:mayor_recomp_esfuerzo_n_c" = "Esfuerzo × Actitud: premiar el esfuerzo",
+  "esfuerzo:sexoMujer"                 = "Esfuerzo × Mujer",
+  "esfuerzo:sexoOtro"                  = "Esfuerzo × Otro",
+  "esfuerzo:justif_talento_n_c"        = "Esfuerzo × Justificación del talento",
+  "talento:mindset_inteligencia_n_c"   = "Talento × Mindset de inteligencia"
+)
+
+# Varianza de cada componente aleatorio (guion si el modelo no lo incluye)
+varianzas <- function(m) {
+  vc <- as.data.frame(VarCorr(m)) %>%
+    filter(is.na(var2))
+
+  g <- function(grp, v = NULL) {
+    x <- if (is.null(v)) {
+      vc$vcov[vc$grp == grp]
+    } else {
+      vc$vcov[vc$grp == "id_estudiante" & vc$var1 == v]
+    }
+
+    if (length(x) == 0) "—" else sprintf("%.3f", x)
+  }
+
+  c(
+    g("id_estudiante", "(Intercept)"),
+    g("id_estudiante", "esfuerzo"),
+    g("id_estudiante", "talento"),
+    g("Residual"),
+    as.character(ngrps(m))
+  )
+}
+
+filas_extra <- tibble(
+  term = c(
+    "Varianza: intercepto (estudiante)",
+    "Varianza: pendiente de esfuerzo",
+    "Varianza: pendiente de talento",
+    "Varianza residual",
+    "Estudiantes"
+  ),
+  m1 = varianzas(m_sig_c),
+  m2 = varianzas(m_sig_c_re)
+)
+attr(filas_extra, "position") <- 27
+
+gof <- tribble(
+  ~raw,   ~clean,          ~fmt,
+  "nobs", "Observaciones", 0,
+  "aic",  "AIC",           1,
+  "bic",  "BIC",           1
+)
+```
+
+La @tbl-modelos presenta los efectos fijos de dos especificaciones: un modelo con intercepto aleatorio por estudiante y un modelo que, además, incluye pendientes aleatorias de esfuerzo y talento. Ambos incorporan los atributos del perfil y las cuatro interacciones que resultaron significativas en el modelo completo. Las actitudes están centradas en su promedio y la referencia de sexo es "Hombre". La muestra corresponde a 2.632 observaciones de 658 estudiantes, y los valores p usan la aproximación de Satterthwaite.
+
+```{r}
+#| label: tbl-modelos
+#| echo: false
+#| tbl-cap: "Efectos fijos de los modelos multinivel sobre las décimas asignadas"
+
+modelsummary(
+  list("Intercepto aleatorio"  = m_sig_c,
+       "Pendientes aleatorias" = m_sig_c_re),
+  coef_map  = coef_etiquetas,
+  gof_map   = gof,
+  add_rows  = filas_extra,
+  stars     = c("*" = .05, "**" = .01, "***" = .001),
+  statistic = "std.error",
+  fmt       = 3,
+  notes     = "Errores estándar entre paréntesis."
+)
+```
+
+La @tbl-aleatorios muestra los componentes de varianza del modelo con pendientes aleatorias.
+
+```{r}
+#| label: tbl-aleatorios
+#| echo: false
+#| tbl-cap: "Efectos aleatorios del modelo con pendientes aleatorias"
+
+as.data.frame(VarCorr(m_sig_c_re)) %>%
+  filter(is.na(var2)) %>%
+  transmute(
+    Componente = case_when(
+      var1 == "(Intercept)" ~ "Intercepto (perfil D)",
+      var1 == "esfuerzo"    ~ "Pendiente de esfuerzo",
+      var1 == "talento"     ~ "Pendiente de talento",
+      TRUE                  ~ "Residual"
+    ),
+    Varianza = vcov,
+    DE       = sdcor
+  ) %>%
+  kable(digits = 3)
+```
+
+**Efectos de los atributos del perfil.** Para un hombre con actitudes promedio, un perfil que se esfuerza recibe en promedio 1,58 décimas más que uno que no se esfuerza, y un perfil con casa grande recibe 0,71 décimas menos que uno con casa pequeña. El esfuerzo pesa más del doble que las condiciones del hogar, y el signo negativo del talento indica compensación: a igual esfuerzo, se asignan más décimas a quien tiene peores condiciones.
+
+**Esfuerzo y actitud hacia premiarlo.** Esta es la interacción más sólida y se mantiene al permitir que los estudiantes difieran en su ponderación del esfuerzo. Por cada punto adicional de acuerdo con que quienes más se esfuerzan deben recibir mayores recompensas, la diferencia entre un perfil que se esfuerza y uno que no aumenta en 0,31 décimas (entre los extremos de la escala, cerca de 0,94 décimas). Dado que la suma de décimas está fija, el efecto se reparte de forma simétrica: cada punto adicional de acuerdo asigna unas 0,16 décimas más a los perfiles que se esfuerzan y quita unas 0,16 a los que no.
+
+**Talento y mindset de inteligencia.** Cada punto adicional de acuerdo con que las personas pueden ser más inteligentes si lo intentan aumenta en 0,16 la diferencia entre un perfil con casa grande y uno con casa pequeña. Con mindset promedio, el efecto del talento es de −0,71; un punto por debajo es de −0,87 y un punto por encima, de −0,56. A mayor creencia en que la inteligencia es mejorable, hay menos compensación a favor de quienes tienen peores condiciones. La interacción es significativa al 5%, pero débil.
+
+**Sexo y justificación del talento.** Las interacciones del esfuerzo con sexo (Mujer: p = 0,074; Otro: p = 0,086) y con la justificación del talento (p = 0,199) no alcanzan significancia en el modelo con pendientes aleatorias.
+
+**Heterogeneidad entre estudiantes.** La desviación estándar de la pendiente de esfuerzo (1,37) es casi igual al efecto promedio (1,58), de modo que los estudiantes difieren mucho en cuánto premian el esfuerzo. Si los efectos individuales se distribuyen de forma aproximadamente normal, cerca del 12% asignaría menos décimas al perfil que se esfuerza que al que no. En el talento, la desviación estándar (0,98) es del mismo orden que el efecto promedio (−0,71), y cerca del 23% asignaría más décimas a la casa grande en lugar de menos. Estas proporciones son aproximadas y dependen del supuesto de normalidad.
+
+## Notas metodológicas
+
+Dado que cada estudiante distribuye una suma fija de 10 décimas, su promedio individual es constante (2,5). En el modelo con solo intercepto aleatorio, la varianza del intercepto es nula por construcción, y en el modelo con pendientes aleatorias el intercepto no corresponde al promedio del estudiante sino a la asignación al perfil D. Además, esa restricción impone una dependencia lineal entre el intercepto y las dos pendientes aleatorias, por lo que ambos modelos reportan un ajuste singular. Esto no afecta la estimación de los efectos fijos, y las correlaciones entre componentes aleatorios (−0,82 entre intercepto y esfuerzo, −0,59 entre intercepto y talento) son en gran parte estructurales y no se interpretan sustantivamente.
+
+Las cuatro interacciones incluidas se seleccionaron por haber resultado significativas en un modelo previo con todas las covariables y luego se estimaron sobre los mismos datos. Por ello, los valores p son más optimistas de lo habitual y el tamaño de los efectos puede estar sobreestimado, de modo que los resultados deben considerarse exploratorios. La interacción del esfuerzo con la actitud hacia premiarlo es la única que resiste con holgura.
+
+
+Evaluacion de residuos y supuestos de los modelos finales
+```{r}
+library(tidyverse)
+
+mod <- m_sig_c_re
+
+# --- 1. Residuos de nivel 1: QQ plot en grilla (todos los perfiles + cada perfil) ---
+
+res_df <- model.frame(mod) %>%
+  transmute(
+    perfil = case_when(
+      esfuerzo == 1 & talento == 0 ~ "A: esfuerzo, casa pequeña",
+      esfuerzo == 0 & talento == 1 ~ "B: sin esfuerzo, casa grande",
+      esfuerzo == 1 & talento == 1 ~ "C: esfuerzo, casa grande",
+      TRUE                         ~ "D: sin esfuerzo, casa pequeña"
+    )
+  ) %>%
+  mutate(residuo = resid(mod, scaled = TRUE))     # residuos estandarizados
+
+niveles <- c("Todos los perfiles", sort(unique(res_df$perfil)))
+
+bind_rows(res_df %>% mutate(perfil = "Todos los perfiles"), res_df) %>%
+  mutate(perfil = factor(perfil, levels = niveles)) %>%
+  ggplot(aes(sample = residuo)) +
+  stat_qq(alpha = 0.4, size = 1) +
+  stat_qq_line(color = "red") +
+  facet_wrap(~ perfil, ncol = 3) +
+  labs(title = "QQ plot de los residuos de nivel 1",
+       x = "Cuantiles teóricos (normal)",
+       y = "Residuos estandarizados") +
+  theme_minimal()
+
+
+# --- 2. Efectos aleatorios: QQ plot en grilla (intercepto y pendientes) ---
+
+re_df <- ranef(mod)$id_estudiante %>%
+  rownames_to_column("id_estudiante") %>%
+  pivot_longer(-id_estudiante, names_to = "efecto", values_to = "valor") %>%
+  mutate(efecto = recode(efecto,
+                         "(Intercept)" = "Intercepto (perfil D)",
+                         "esfuerzo"    = "Pendiente de esfuerzo",
+                         "talento"     = "Pendiente de talento"))
+
+ggplot(re_df, aes(sample = valor)) +
+  stat_qq(alpha = 0.4, size = 1) +
+  stat_qq_line(color = "red") +
+  facet_wrap(~ efecto, scales = "free", ncol = 3) +
+  labs(title = "QQ plot de los efectos aleatorios por estudiante",
+       x = "Cuantiles teóricos (normal)",
+       y = "Efecto aleatorio estimado") +
+  theme_minimal()
+```
+

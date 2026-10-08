@@ -1,0 +1,217 @@
+---
+title: "Reporte metodológico: moderadores individuales de las preferencias distributivas en el DSE"
+subtitle: "Encuesta panel EDUMER, segunda ola"
+lang: es
+format:
+  html:
+    toc: true
+    toc-title: "Contenidos"
+    number-sections: true
+  docx:
+    toc: true
+    number-sections: true
+---
+
+# Resumen {.unnumbered}
+
+Este reporte describe cómo se prepararon los datos del experimento distribucional de encuesta (DSE) de la segunda ola de EDUMER y cómo se evaluó, bloque por bloque, si características de los estudiantes moderan la forma en que reparten décimas entre perfiles que se esfuerzan más o menos y que tienen mejores o peores condiciones de estudio en el hogar.
+
+Se probaron 21 moderadores (44 términos de interacción) con modelos multinivel y luego se contrastaron con modelos de errores estándar agrupados por estudiante. **Cinco interacciones son significativas en ambos enfoques**: la expectativa educacional, la percepción de que en Chile importan los contactos, la creencia en que el esfuerzo puede aumentarse y la percepción de igualdad de oportunidades moderan cuánto se premia el esfuerzo, y la percepción de que en la escuela el esfuerzo se traduce en buenas notas modera la compensación por las condiciones del hogar. Otras cinco interacciones, significativas en el enfoque multinivel, no resisten el cambio de errores estándar. Ninguna sobrevive a una corrección estricta por pruebas múltiples, por lo que los resultados deben leerse como exploratorios.
+
+# Diseño del experimento y variable dependiente
+
+El DSE [@gilgen2020] se aplicó en la segunda ola de EDUMER. En su última tarea, cada estudiante dispone de 10 décimas que debe distribuir entre cuatro compañeros ficticios, todos con la misma nota (3,7). Los perfiles resultan de cruzar dos atributos: el **esfuerzo** (se esfuerza más o menos que la mayoría) y el **talento**, entendido como las condiciones que escapan al control del individuo y operacionalizado mediante las condiciones materiales de estudio en el hogar (casa grande, con espacio cómodo para estudiar, o casa pequeña, sin él). Es un diseño factorial 2×2 en el que cada participante evalúa las cuatro combinaciones.
+
+Como los atributos son controlados por el diseño y todos los perfiles comparten la misma nota, las diferencias en las décimas asignadas pueden atribuirse a los atributos manipulados. La variable dependiente es el número de décimas asignadas a cada perfil. El análisis captura preferencias distributivas, es decir, cuánta recompensa escolar se considera justa para cada perfil, y no el desempeño de los estudiantes.
+
+Se utiliza únicamente la cuarta tarea, la que cruza ambos atributos para los cuatro perfiles. Las tareas anteriores, que presentan información parcial, no se incluyen.
+
+# Preparación de los datos
+
+## Estructura y muestra
+
+Los datos se reorganizaron del formato ancho (una fila por estudiante, con las cuatro asignaciones en columnas) al formato largo (cuatro filas por estudiante, una por perfil). Se conservaron solo los estudiantes cuyo reparto suma exactamente 10 décimas, sin valores perdidos. La base analítica contiene hasta 664 estudiantes y 2.656 observaciones. Cada modelo usa a los estudiantes con información completa en su moderador, por lo que el tamaño de la muestra varía levemente entre modelos (entre 657 y 664 estudiantes), salvo en la educación de los padres, donde las respuestas "No sabe" reducen la muestra a 473 estudiantes (madre) y 415 (padre).
+
+## Atributos del perfil
+
+A cada asignación se le incorporaron dos variables binarias que describen el perfil evaluado.
+
+| Perfil | Descripción | Esfuerzo | Talento |
+|:------:|:------------|:--------:|:-------:|
+| A | Se esfuerza más que la mayoría; casa pequeña, sin espacio cómodo para estudiar | 1 | 0 |
+| B | Se esfuerza menos que la mayoría; casa grande, con espacio cómodo para estudiar | 0 | 1 |
+| C | Se esfuerza más que la mayoría; casa grande, con espacio cómodo para estudiar | 1 | 1 |
+| D | Se esfuerza menos que la mayoría; casa pequeña, sin espacio cómodo para estudiar | 0 | 0 |
+
+: Codificación de los atributos de los perfiles {#tbl-codificacion}
+
+## Variables de nivel 2
+
+Las características de los estudiantes se organizaron en cinco bloques teóricos y se renombraron con etiquetas descriptivas.
+
+| Bloque | Variable (ítem) | Contenido | Codificación |
+|:--|:--|:--|:--|
+| I. Creencia en la meritocracia escolar y atribución del logro | bsm_esfuerzo (p2_1) | En esta escuela, quienes se esfuerzan obtienen buenas notas | Acuerdo 1–4 |
+| | bsm_talento (p2_2) | En esta escuela, quienes son inteligentes obtienen buenas notas | Acuerdo 1–4 |
+| | bsm_merecimiento (p2_3) | En esta escuela, los/as estudiantes obtienen las notas que merecen | Acuerdo 1–4 |
+| | esfuerzo_vs_intel (p3) | Qué es más importante para obtener buenas notas | 1 (esfuerzo) a 10 (inteligencia) |
+| II. Experiencia evaluativa personal | promedio_notas (p4) | Promedio final del año anterior | 1,0–7,0 |
+| | promedio_vs_merecido (p5) | El promedio fue más o menos de lo que merecía | 1 menos, 2 lo que merecía, 3 más |
+| | notas_vs_tiempo (p7) | Las notas que me saco, dado el tiempo que dedico a estudiar | 1 menos, 2 lo que merezco, 3 más |
+| III. Teorías implícitas sobre la habilidad | mindset_esfuerzo (p8_1) | Las personas pueden esforzarse más si lo intentan | Acuerdo 1–4 |
+| | mindset_inteligencia (p8_2) | Las personas pueden ser más inteligentes si lo intentan | Acuerdo 1–4 |
+| IV. Percepciones descriptivas de Chile | chile_recomp_esfuerzo (p1_1) | En Chile, las personas son recompensadas por sus esfuerzos | Acuerdo 1–4 |
+| | chile_recomp_inteligencia (p1_2) | En Chile, son recompensadas por su inteligencia y habilidad | Acuerdo 1–4 |
+| | chile_padres_ricos (p1_3) | A quienes tienen padres ricos les va mucho mejor en la vida | Acuerdo 1–4 |
+| | chile_contactos (p1_4) | A quienes tienen buenos contactos les va mejor en la vida | Acuerdo 1–4 |
+| | chile_igualdad_oportunidades (p1_9) | Todas las personas tienen las mismas oportunidades para salir adelante | Acuerdo 1–4 |
+| | merecen_lo_que_tienen (p1_10) | En Chile, todas las personas obtienen lo que merecen | Acuerdo 1–4 |
+| V. NSE, capital cultural y demografía | educ_esperada (p16) | Nivel educacional que cree que va a completar | 1 media, 2 instituto o CFT, 3 universidad |
+| | educ_madre (p17), educ_padre (p18) | Último nivel de estudios completado | 1 no terminó básica a 6 posgrado |
+| | libros_hogar (p19) | Cantidad aproximada de libros en el hogar | 1 (0–10) a 6 (más de 500) |
+| | sexo (p14) | Género | Hombre (referencia), mujer, otro |
+| | nivel | Curso del estudiante | Sexto básico (referencia), séptimo básico |
+
+: Moderadores de nivel 2 evaluados, por bloque {#tbl-variables}
+
+## Recodificación y valores perdidos
+
+- **Ítems de acuerdo.** Se codificaron de 1 (muy en desacuerdo) a 4 (muy de acuerdo). Las respuestas "No sabe" (88) y "No responde" (99) pasaron a valor perdido.
+- **Promedios.** Los valores fuera del rango 1,0–7,0 pasaron a valor perdido.
+- **Variables ordinales.** Los ítems de acuerdo, las comparaciones entre el promedio y lo merecido, la expectativa educacional, la educación de los padres y los libros en el hogar se incorporaron a los modelos como variables numéricas, es decir, con un único coeficiente por interacción. Esto supone categorías equidistantes. Se probó antes un tratamiento como factores ordenados, pero genera varios términos polinomiales por interacción (lineal, cuadrático, cúbico y de grados superiores) y diluye la potencia.
+- **Variables no incluidas en los bloques.** Las actitudes normativas (premiar el esfuerzo, premiar el talento y justificar que los más talentosos ganen más) y el promedio que el estudiante considera merecido (p6) están en la base, pero no formaron parte de los bloques evaluados en este reporte.
+
+# Estrategia analítica
+
+## Consecuencia de la suma fija
+
+Como cada estudiante distribuye 10 décimas, su promedio individual es constante (2,5). No existe varianza entre estudiantes en el promedio de décimas, de modo que las características de los estudiantes no pueden predecir cuántas décimas asignan en promedio, pero sí **cómo las distribuyen**: moderan el efecto del esfuerzo y del talento. Por ello, las variables de nivel 2 entran únicamente mediante interacciones con los atributos del perfil.
+
+Por la misma restricción, un cambio en la brecha entre perfiles se reparte de forma simétrica. Si el efecto del esfuerzo (la diferencia en décimas entre un perfil que se esfuerza y uno que no) aumenta en $\delta$, cada perfil que se esfuerza recibe $\delta/2$ décimas más y cada perfil que no se esfuerza, $\delta/2$ décimas menos.
+
+## Modelos multinivel
+
+Se estimó un modelo por moderador, con las siguientes características:
+
+- **Efectos fijos.** Los dos atributos del perfil, su interacción, el moderador y las interacciones del moderador con esfuerzo y con talento.
+- **Atributos centrados.** Esfuerzo y talento se centraron a la media global y toman los valores −0,5 y 0,5. Como cada estudiante evalúa los cuatro perfiles, la proporción de cada atributo es idéntica en todos los estudiantes (0,5). Por eso el centrado a la media global coincide con el centrado a la media del grupo, no existe efecto contextual que estimar y las medias de clúster no se incluyen como predictores.
+- **Moderadores sin centrar.** Se mantuvieron en su escala original. El coeficiente del moderador solo captura su relación con el promedio de décimas, que por diseño es nulo, y por eso las tablas se centran en las interacciones.
+- **Efectos aleatorios.** Pendientes aleatorias de esfuerzo y de talento por estudiante, correlacionadas entre sí, y sin intercepto aleatorio. Con los atributos centrados, el intercepto individual es el promedio del estudiante (2,5, constante), así que su varianza es cero por construcción. Incluirlo produce un ajuste singular y una advertencia de convergencia sin aportar información. Omitirlo no altera los efectos fijos.
+- **Estimación.** Máxima verosimilitud restringida, con el paquete lme4 de R. Los valores p reportados en las tablas usan la aproximación normal.
+
+## Modelos con errores estándar agrupados por estudiante
+
+Como prueba de robustez, las mismas especificaciones se estimaron como regresiones lineales, con esfuerzo y talento sin centrar (0/1) y los moderadores sin centrar, y con errores estándar agrupados por estudiante (estimador sándwich robusto a la dependencia entre las cuatro filas de cada persona). Este enfoque no depende de los supuestos de efectos aleatorios (normalidad y estructura de covarianzas).
+
+Dado que el diseño está balanceado, los coeficientes de las interacciones son idénticos en ambos enfoques y solo cambian los errores estándar. En este enfoque, los coeficientes de esfuerzo y talento son condicionales (se refieren al perfil de referencia con el moderador en cero) y no se interpretan por separado.
+
+## Criterio de robustez y pruebas múltiples
+
+Una interacción se considera **robusta** si es significativa al 5 % tanto en el enfoque multinivel como con errores estándar agrupados. Se evaluaron 44 términos de interacción (19 moderadores numéricos con dos términos cada uno, sexo con cuatro y nivel con dos). Si ningún moderador tuviera efecto, se esperarían alrededor de dos términos significativos al 5 % solo por azar. Con una corrección de Bonferroni, el umbral sería de aproximadamente 0,001.
+
+# Resultados
+
+## Interacciones en los modelos multinivel
+
+Los componentes de varianza son prácticamente iguales en todos los modelos: la varianza de la pendiente del esfuerzo es de aproximadamente 2,0 (desviación estándar cercana a 1,4 décimas), la del talento cerca de 0,97, la covarianza entre ambas ronda 0,09 y la varianza residual 0,68. La heterogeneidad entre estudiantes en cuánto premian el esfuerzo es sustantiva, lo que justifica buscar moderadores. En los 21 modelos, el esfuerzo tiene efecto positivo y el talento efecto negativo, es decir, a igual esfuerzo se asignan más décimas a quien tiene peores condiciones en el hogar.
+
+La @tbl-multinivel resume las interacciones de los 21 moderadores. De los 44 términos, 10 son significativos al 5 %: siete modifican el efecto del esfuerzo y tres el del talento.
+
+| Bloque | Moderador | Esfuerzo × Z | Talento × Z | Estudiantes |
+|:--:|:--|:--:|:--:|:--:|
+| I | BSM esfuerzo | 0,035 (0,082) | 0,146 (0,064)* | 663 |
+| I | BSM talento | 0,064 (0,094) | 0,016 (0,074) | 664 |
+| I | BSM merecimiento | −0,059 (0,087) | 0,086 (0,068) | 662 |
+| I | Esfuerzo vs. inteligencia | −0,014 (0,034) | −0,025 (0,027) | 657 |
+| II | Promedio de notas | 0,117 (0,107) | −0,043 (0,084) | 664 |
+| II | Promedio vs. merecido | −0,277 (0,136)* | 0,221 (0,107)* | 663 |
+| II | Notas vs. tiempo dedicado | −0,107 (0,124) | −0,003 (0,098) | 660 |
+| III | Mindset de esfuerzo | 0,224 (0,090)* | 0,052 (0,071) | 663 |
+| III | Mindset de inteligencia | 0,025 (0,088) | 0,145 (0,069)* | 661 |
+| IV | Chile: recompensa al esfuerzo | 0,013 (0,076) | 0,041 (0,059) | 664 |
+| IV | Chile: recompensa a la inteligencia | −0,059 (0,082) | 0,048 (0,064) | 662 |
+| IV | Chile: padres ricos | 0,100 (0,066) | −0,085 (0,052) | 659 |
+| IV | Chile: buenos contactos | 0,203 (0,074)** | −0,084 (0,058) | 662 |
+| IV | Chile: igualdad de oportunidades | −0,134 (0,061)* | 0,020 (0,048) | 664 |
+| IV | Chile: todos obtienen lo que merecen | −0,150 (0,073)* | 0,085 (0,057) | 662 |
+| V | Educación de la madre | 0,029 (0,068) | −0,041 (0,055) | 473 |
+| V | Educación del padre | −0,076 (0,073) | −0,016 (0,057) | 415 |
+| V | Libros en el hogar | −0,040 (0,050) | −0,033 (0,039) | 663 |
+| V | Educación esperada | 0,220 (0,080)** | 0,007 (0,063) | 662 |
+| V | Sexo: mujer (ref. hombre) | 0,140 (0,129) | 0,078 (0,101) | 664 |
+| V | Sexo: otro (ref. hombre) | −0,765 (0,375)* | 0,054 (0,296) | 664 |
+| V | Nivel: séptimo básico (ref. sexto) | 0,085 (0,127) | −0,111 (0,100) | 664 |
+
+: Interacciones entre niveles en modelos multinivel (un moderador por modelo) {#tbl-multinivel}
+
+*Coeficientes no estandarizados, en décimas, con error estándar entre paréntesis. Z es el moderador sin centrar; esfuerzo y talento están centrados (±0,5). Todos los modelos incluyen pendientes aleatorias de esfuerzo y talento por estudiante. \* p < 0,05; \*\* p < 0,01. Los ítems de acuerdo van de 1 a 4; esfuerzo vs. inteligencia, de 1 a 10; el promedio de notas, de 1,0 a 7,0.*
+
+## Contraste con errores estándar agrupados
+
+La @tbl-cluster repite los nueve modelos con interacciones significativas en el enfoque anterior, ahora con errores estándar agrupados por estudiante. Los coeficientes son los mismos, y los errores estándar resultan algo mayores (hasta un 19 % en los términos de moderación).
+
+| Moderador | Esfuerzo × Z | Talento × Z | Observaciones |
+|:--|:--:|:--:|:--:|
+| BSM esfuerzo | 0,035 (0,083) | 0,146 (0,069)* | 2.652 |
+| Promedio vs. merecido | −0,277 (0,157) | 0,221 (0,115) | 2.652 |
+| Mindset de esfuerzo | 0,224 (0,097)* | 0,052 (0,073) | 2.652 |
+| Mindset de inteligencia | 0,025 (0,089) | 0,145 (0,082) | 2.644 |
+| Chile: buenos contactos | 0,203 (0,077)** | −0,084 (0,059) | 2.648 |
+| Chile: igualdad de oportunidades | −0,134 (0,066)* | 0,020 (0,048) | 2.656 |
+| Chile: todos obtienen lo que merecen | −0,150 (0,078) | 0,085 (0,063) | 2.648 |
+| Educación esperada | 0,220 (0,085)** | 0,007 (0,066) | 2.648 |
+| Sexo: mujer (ref. hombre) | 0,140 (0,129) | 0,078 (0,101) | 2.656 |
+| Sexo: otro (ref. hombre) | −0,765 (0,418) | 0,054 (0,276) | 2.656 |
+
+: Interacciones entre niveles con errores estándar agrupados por estudiante {#tbl-cluster}
+
+*Regresiones lineales con esfuerzo y talento sin centrar (0/1) y errores estándar agrupados por estudiante entre paréntesis. \* p < 0,05; \*\* p < 0,01.*
+
+## Síntesis de robustez
+
+La @tbl-robustez reúne las interacciones significativas en al menos uno de los dos enfoques.
+
+| Interacción | Multinivel | Errores agrupados | ¿Robusta? |
+|:--|:--:|:--:|:--:|
+| Esfuerzo × educación esperada | 0,220 (0,080)** | 0,220 (0,085)** | Sí |
+| Esfuerzo × buenos contactos (Chile) | 0,203 (0,074)** | 0,203 (0,077)** | Sí |
+| Esfuerzo × mindset de esfuerzo | 0,224 (0,090)* | 0,224 (0,097)* | Sí, moderada |
+| Talento × BSM esfuerzo | 0,146 (0,064)* | 0,146 (0,069)* | Sí, moderada |
+| Esfuerzo × igualdad de oportunidades | −0,134 (0,061)* | −0,134 (0,066)* | Sí, frágil |
+| Esfuerzo × promedio vs. merecido | −0,277 (0,136)* | −0,277 (0,157) | No |
+| Talento × promedio vs. merecido | 0,221 (0,107)* | 0,221 (0,115) | No, marginal |
+| Talento × mindset de inteligencia | 0,145 (0,069)* | 0,145 (0,082) | No, marginal |
+| Esfuerzo × todos obtienen lo que merecen | −0,150 (0,073)* | −0,150 (0,078) | No, marginal |
+| Esfuerzo × sexo: otro | −0,765 (0,375)* | −0,765 (0,418) | No |
+| Esfuerzo × talento (atributos del perfil) | −0,145 (0,064)* | −0,145 (0,091) | No |
+
+: Robustez de las interacciones significativas {#tbl-robustez}
+
+*Coeficientes con error estándar entre paréntesis. \* p < 0,05; \*\* p < 0,01. "Marginal" indica un valor p entre aproximadamente 0,05 y 0,08 con errores agrupados. "Frágil" indica significancia con p cercano a 0,04.*
+
+# Conclusiones
+
+**Efectos robustos.** Cinco interacciones resisten el cambio de errores estándar. Todas se interpretan como el cambio, por cada punto del moderador, en la diferencia de décimas entre perfiles.
+
+1. **Educación esperada** (0,22 por nivel). Quienes esperan alcanzar un nivel educacional más alto premian más el esfuerzo. Entre los extremos de la escala (educación media y universidad), la brecha entre un perfil que se esfuerza y uno que no crece cerca de 0,44 décimas. Es la señal más sólida, con buena muestra y sin cambios sustantivos entre enfoques.
+2. **Buenos contactos en Chile** (0,20 por punto). Quienes perciben que los contactos determinan el éxito premian más el esfuerzo (alrededor de 0,61 décimas entre los extremos de la escala).
+3. **Mindset de esfuerzo** (0,22 por punto). Quienes creen que las personas pueden esforzarse más si lo intentan premian más el esfuerzo (alrededor de 0,67 décimas entre extremos). Es significativa, pero con p cercano a 0,02.
+4. **Igualdad de oportunidades** (−0,13 por punto). Quienes perciben que todos tienen las mismas oportunidades premian menos el esfuerzo (alrededor de 0,40 décimas menos entre extremos). Es la más frágil de las cinco, con p cercano a 0,04 con errores agrupados.
+5. **BSM esfuerzo, sobre el talento** (0,15 por punto). Quienes creen que en su escuela el esfuerzo se traduce en buenas notas compensan menos a los perfiles con peores condiciones en el hogar (alrededor de 0,44 décimas menos de compensación entre extremos). Es la única moderación robusta que opera sobre el talento.
+
+**Efectos no robustos.** Cinco interacciones significativas en el enfoque multinivel pierden significancia con errores agrupados: las dos del promedio frente a lo merecido, la del mindset de inteligencia sobre el talento, la de "todos obtienen lo que merecen" y la de sexo "otro". Esta última proviene de una categoría con un error estándar mucho mayor que el resto, lo que indica un grupo reducido, y no debe interpretarse. Tampoco es robusta la interacción entre esfuerzo y talento (−0,145): significativa en los modelos multinivel, no lo es con errores agrupados (error estándar de 0,091).
+
+**Moderadores sin evidencia.** No se detecta moderación para la percepción de que en la escuela se premia la inteligencia o se obtienen las notas merecidas, el promedio de notas, la relación entre notas y tiempo dedicado, la percepción de recompensa al esfuerzo o a la inteligencia en Chile, la educación de los padres, los libros en el hogar, el curso ni el sexo (mujer frente a hombre). La percepción de que a los hijos de padres ricos les va mejor muestra la misma dirección que la de los contactos (0,100), pero no es significativa.
+
+**Lectura de conjunto.** Cuatro de las cinco interacciones robustas modifican cuánto se premia el esfuerzo. Las diferencias entre estudiantes se asocian más con la ponderación del esfuerzo que con la compensación por las condiciones del hogar. En el bloque de percepciones de Chile, la dirección es coherente: quienes ven una sociedad menos abierta (más peso de los contactos, menos igualdad de oportunidades) premian más el esfuerzo en la tarea escolar. Las expectativas educacionales y la creencia en que el esfuerzo es modificable se asocian en la misma dirección.
+
+# Limitaciones
+
+1. **Resultados exploratorios.** Se evaluaron 44 términos y ninguno superaría una corrección de Bonferroni. Los hallazgos robustos se apoyan en valores p de entre 0,01 y 0,04, por lo que requieren replicación.
+2. **Selección por significancia.** Las tablas de contraste y de robustez se centran en los modelos con efectos significativos, de modo que los valores p son más optimistas de lo habitual y los tamaños de efecto pueden estar sobreestimados.
+3. **Moderadores probados por separado.** Cada modelo incluye un solo moderador, así que no se controlan entre sí. Varios miden construcciones cercanas (contactos, padres ricos e igualdad de oportunidades) y sus efectos pueden solaparse. Un modelo conjunto con los moderadores robustos permitiría evaluar su contribución independiente.
+4. **Asociaciones, no efectos causales.** Los moderadores son actitudes y características medidas en la encuesta, no manipuladas. Solo los atributos de los perfiles son resultado del diseño experimental.
+5. **Supuesto de equidistancia.** Las variables ordinales se tratan como numéricas. Es razonable para la expectativa educacional y los ítems de acuerdo, y más discutible para la educación de los padres y los libros en el hogar.
+6. **Muestras distintas entre modelos.** Cada modelo pierde a los estudiantes con valores perdidos en su moderador, por lo que los índices de ajuste no son comparables entre columnas.
+7. **Valores p aproximados.** En los modelos multinivel se usa la aproximación normal. Los errores estándar agrupados apoyan la lectura de robustez, pero no sustituyen una prueba con grados de libertad corregidos.
+8. **Variables no evaluadas.** Las actitudes normativas hacia premiar el esfuerzo y el talento están disponibles, pero no se incluyeron en los bloques de este reporte.
