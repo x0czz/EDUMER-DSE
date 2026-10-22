@@ -33,6 +33,28 @@ main table thead th { border-bottom: 1px solid #000 !important; border-top: none
 main table td, main table th { border-left: none !important; border-right: none !important; }
 main table tbody td { border-bottom: none !important; }
 .nota-apa { font-size: 0.9em; margin-top: -0.5em; margin-bottom: 1.5em; }
+
+/* Fallback cuando no cargan los estilos de layout de Quarto. */
+#quarto-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 2rem;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+#quarto-document-content { grid-column: 1; grid-row: 1; min-width: 0; }
+#quarto-margin-sidebar {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+  position: sticky;
+  top: 1rem;
+}
+@media (max-width: 900px) {
+  #quarto-content { display: block; padding: 1rem; }
+  #quarto-margin-sidebar { position: static; margin-bottom: 1.5rem; }
+}
 /* Tablas compactas: letra más chica y filas más bajas */
 main table td, main table th { padding: 0.15rem 0.5rem !important; font-size: 0.85em; line-height: 1.25; }
 </style>
