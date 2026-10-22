@@ -4,12 +4,14 @@ _book/
 _site/
 .DS_Store
 docs/
-_freeze/
+# _freeze/ se versiona: GitHub Actions publica con los resultados ya calculados localmente
 *.Rmd
 *.utf8.md
 *.knit.md
 *_cache/
 *_files/
+!index_corregido_files/
+!index_corregido_files/**
 !reporte_metodologico_dse_codigo_files/
 !reporte_metodologico_dse_codigo_files/**
 *.log
