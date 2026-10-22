@@ -1,0 +1,695 @@
+---
+title: "El experimento distribucional (DSE) de EDUMER, ola 2"
+subtitle: "Modelos multinivel de la aprobación y de las décimas asignadas"
+output-file: index.html
+lang: es
+format:
+  html:
+    toc: true
+    toc-title: "Contenidos"
+    toc-depth: 3
+    number-sections: true
+    tbl-cap-location: top
+    fig-cap-location: top
+    code-tools:
+      source: true
+      toggle: false
+      caption: "Ver código fuente"
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{=html}
+<style>
+/* Tablas en estilo APA: solo líneas horizontales arriba, bajo el encabezado y al final */
+main table {
+  border-top: 2px solid #000 !important;
+  border-bottom: 2px solid #000 !important;
+  border-collapse: collapse;
+}
+main table thead th { border-bottom: 1px solid #000 !important; border-top: none !important; }
+main table td, main table th { border-left: none !important; border-right: none !important; }
+main table tbody td { border-bottom: none !important; }
+.nota-apa { font-size: 0.9em; margin-top: -0.5em; margin-bottom: 1.5em; }
+/* Tablas compactas: letra más chica y filas más bajas */
+main table td, main table th { padding: 0.15rem 0.5rem !important; font-size: 0.85em; line-height: 1.25; }
+</style>
+```
+
+```{r}
+#| label: setup
+#| include: false
+
+# Paquetes necesarios:
+# install.packages(c("tidyverse", "haven", "lme4", "lmerTest", "broom.mixed",
+#                    "modelsummary", "knitr"))
+library(tidyverse)
+library(haven)
+library(lme4)
+library(lmerTest)
+library(modelsummary)
+library(knitr)
+
+options(scipen = 999, knitr.kable.NA = "")
+theme_set(theme_minimal(base_size = 12))
+
+# ---- Funciones de formato APA ----
+fmt_num <- function(x, d = 2) formatC(x, format = "f", digits = d, big.mark = "")
+fmt_p   <- function(p) ifelse(p < .001, "< .001",
+                              sub("^0\\.", ".", formatC(p, format = "f", digits = 3)))
+fmt_ic  <- function(lo, hi, d = 2) paste0("[", fmt_num(lo, d), ", ", fmt_num(hi, d), "]")
+estrellas_apa <- c("*" = .05, "**" = .01, "***" = .001)
+```
+
+```{r}
+#| label: datos
+
+load("input/db_proc_students_w02.RData")
+
+# Recodificación: 88 (no sabe) y 99 (no responde) pasan a NA
+limpiar <- function(x) na_if(na_if(as.numeric(zap_labels(x)), 88), 99)
+
+base <- db_students_w02 %>%
+  mutate(across(starts_with("exp_t4_"), ~ as.numeric(zap_labels(.x))),
+         total_decimas = rowSums(across(starts_with("exp_t4_")), na.rm = FALSE))
+
+n_base      <- nrow(base)
+n_sin_resp  <- sum(is.na(base$total_decimas))
+n_otra_suma <- sum(!is.na(base$total_decimas) & base$total_decimas != 10)
+
+# ---- Base de estudiantes (una fila por estudiante) ----
+est <- base %>%
+  filter(total_decimas == 10) %>%
+  transmute(
+    id_estudiante,
+    A = exp_t4_a, B = exp_t4_b, C = exp_t4_c, D = exp_t4_d,
+    sexo  = factor(as.numeric(zap_labels(p14_o2)), levels = 1:3,
+                   labels = c("Hombre", "Mujer", "Otro")),
+    nivel = factor(as.numeric(zap_labels(nivel_estudiante_o2)), levels = 1:4,
+                   labels = c("Sexto básico", "Séptimo básico",
+                              "Primero medio", "Segundo medio")),
+    # Variables de nivel 2 (escala 1-4, sin centrar)
+    igualdad_oport = limpiar(p1_9_o2),   # En Chile todos tienen las mismas oportunidades
+    pref_esfuerzo  = limpiar(p1_5_o2),   # Quienes más se esfuerzan deberían obtener más
+    mindset_esf    = limpiar(p8_1_o2),   # Las personas pueden esforzarse más si lo intentan
+    mercado_educ   = limpiar(p9_3_o2),   # Está bien que quienes pueden pagar más tengan mejor educación
+    merecen_soc    = limpiar(p1_10_o2),  # En Chile, todas las personas obtienen lo que merecen
+    privilegio_percibido = (limpiar(p1_3_o2) + limpiar(p1_4_o2)) / 2   # padres ricos / contactos
+  )
+
+n_est <- nrow(est)
+
+# ---- Base larga (una fila por estudiante y perfil) ----
+etiquetas_perfil <- c("A: se esfuerza más, casa pequeña",
+                      "B: se esfuerza menos, casa grande",
+                      "C: se esfuerza más, casa grande",
+                      "D: se esfuerza menos, casa pequeña")
+
+dse <- est %>%
+  pivot_longer(A:D, names_to = "perfil", values_to = "decimas") %>%
+  mutate(
+    esfuerzo    = if_else(perfil %in% c("A", "C"), 1L, 0L),   # 1 = se esfuerza más
+    oportunidad = if_else(perfil %in% c("B", "C"), 1L, 0L),   # 1 = casa grande
+    aprueba     = if_else(decimas >= 3, 1L, 0L),              # 3,7 + 3 décimas = 4,0
+    perfil_label = factor(perfil, levels = c("A", "B", "C", "D"),
+                          labels = etiquetas_perfil)
+  ) %>%
+  group_by(id_estudiante) %>%
+  mutate(esfuerzo_w    = esfuerzo    - mean(esfuerzo),        # CWC: -0,5 / 0,5
+         oportunidad_w = oportunidad - mean(oportunidad)) %>%
+  ungroup()
+
+# ---- Muestra de los modelos: la misma para todos ----
+dse_mod <- dse %>% drop_na(igualdad_oport, pref_esfuerzo, mindset_esf)
+est_mod <- dse_mod %>% distinct(id_estudiante, .keep_all = TRUE)
+n_est_mod <- nrow(est_mod)
+n_obs_mod <- nrow(dse_mod)
+
+# ---- Muestra de los modelos de hipótesis: la misma para todos ----
+dse_hip <- dse %>% drop_na(pref_esfuerzo, mindset_esf, mercado_educ, merecen_soc,
+                           privilegio_percibido)
+n_est_hip <- n_distinct(dse_hip$id_estudiante)
+n_obs_hip <- nrow(dse_hip)
+```
+
+# El experimento
+
+## El DSE en EDUMER
+
+El experimento distribucional de encuesta (DSE; Gilgen, 2020) se aplicó en la **segunda ola de la encuesta panel EDUMER** a estudiantes de sexto y séptimo básico. El bien que se reparte son **décimas de nota**. El experimento tiene cuatro tareas; las tres primeras presentan información parcial de los perfiles y la cuarta presenta la información completa. **Este documento analiza solo la cuarta tarea.**
+
+En la cuarta tarea, cada estudiante dispone de **10 décimas** que debe repartir entre **cuatro compañeros ficticios**. Los cuatro tienen la **misma nota: un 3,7**, es decir, están reprobando por tres décimas. La nota mínima de aprobación en Chile es 4,0, por lo que un compañero que recibe 3 décimas o más queda aprobado.
+
+## Los perfiles
+
+Los cuatro compañeros resultan de cruzar dos atributos con dos niveles cada uno:
+
+- **Esfuerzo**: se esfuerza más que la mayoría / se esfuerza menos que la mayoría. Representa lo que depende de la persona.
+- **Condiciones de estudio en el hogar**: casa grande con espacio cómodo para estudiar / casa pequeña sin espacio cómodo. Representa lo que escapa al control de la persona. En los análisis se la llama **oportunidad**, siguiendo la distinción entre esfuerzo y circunstancias no elegidas.
+
+Se trata de un **diseño factorial 2×2 completo**: cada estudiante ve las cuatro combinaciones, siempre las mismas.
+
+| Perfil | Fraseo en el cuestionario | Esfuerzo | Casa grande |
+|:------:|:--------------------------|:--------:|:-----------:|
+| A | Se esfuerza más que la mayoría. Su casa es pequeña, no tiene un espacio cómodo para estudiar | 1 | 0 |
+| B | Se esfuerza menos que la mayoría. Su casa es grande, tiene un espacio cómodo para estudiar | 0 | 1 |
+| C | Se esfuerza más que la mayoría. Su casa es grande, tiene un espacio cómodo para estudiar | 1 | 1 |
+| D | Se esfuerza menos que la mayoría. Su casa es pequeña, no tiene un espacio cómodo para estudiar | 0 | 0 |
+
+: Perfiles de la cuarta tarea y su codificación {#tbl-perfiles}
+
+Como todos los perfiles tienen la misma nota y los atributos están fijados por el diseño, cualquier diferencia sistemática en las décimas asignadas se debe a los atributos manipulados.
+
+## Quiénes participaron
+
+```{r}
+#| label: muestra
+
+tab_nivel <- est %>% count(nivel, .drop = TRUE) %>% filter(n > 0) %>%
+  mutate(pct = n / sum(n) * 100)
+tab_sexo  <- est %>% count(sexo) %>% mutate(pct = n / sum(n) * 100)
+```
+
+La base de la segunda ola contiene `r n_base` estudiantes. Se excluyen `r n_sin_resp` que dejaron al menos un perfil sin asignar y `r n_otra_suma` cuyo reparto no suma exactamente 10 décimas. La **muestra analítica es de `r n_est` estudiantes**, que aportan `r n_est * 4` asignaciones (cuatro cada uno).
+
+```{r}
+#| label: tbl-muestra
+#| tbl-cap: "Composición de la muestra analítica"
+
+bind_rows(
+  tab_nivel %>% transmute(Variable = "Curso", Categoría = as.character(nivel), n, `%` = fmt_num(pct, 1)),
+  tab_sexo  %>% transmute(Variable = "Género", Categoría = as.character(sexo), n, `%` = fmt_num(pct, 1))
+) %>%
+  kable(align = "llrr")
+```
+
+## Cómo quedan organizados los datos
+
+En la base original cada estudiante es una fila con cuatro columnas (las décimas para A, B, C y D). Para el análisis se pasa a **formato largo**: cada estudiante ocupa cuatro filas, una por perfil, con las variables de esfuerzo y oportunidad que describen ese perfil.
+
+| Estudiante | Perfil | Esfuerzo | Casa grande | Décimas | Aprueba |
+|:----------:|:------:|:--------:|:-----------:|:-------:|:-------:|
+| 1 | A | 1 | 0 | 4 | 1 |
+| 1 | B | 0 | 1 | 1 | 0 |
+| 1 | C | 1 | 1 | 4 | 1 |
+| 1 | D | 0 | 0 | 1 | 0 |
+
+: Ejemplo: un estudiante en formato largo {#tbl-ejemplo}
+
+## La suma fija
+
+Cada estudiante reparte exactamente 10 décimas, así que su promedio por perfil es siempre 2,5. Por eso lo que se analiza no es cuánto da cada estudiante, sino **cómo lo reparte**; las asignaciones de un mismo estudiante no son independientes, y los efectos de los atributos son **comparaciones dentro de cada estudiante**.
+
+# Las variables dependientes
+
+Se analizan dos especificaciones de la misma respuesta:
+
+- **Décimas asignadas** (continua, 0 a 10): cuántas décimas recibe cada perfil.
+- **Aprueba / no aprueba** (binaria): 1 si el perfil recibe 3 o más décimas, con lo que pasa de 3,7 a 4,0; 0 si no. Captura **a quién se deja pasar**, no cuánto se le da.
+
+Con 10 décimas, cada estudiante aprueba como mínimo a un perfil (cuatro perfiles con 2 o menos suman a lo más 8) y como máximo a tres (cuatro con 3 o más sumarían al menos 12).
+
+```{r}
+#| label: tbl-desc-perfil
+#| tbl-cap: "Décimas asignadas y aprobación por perfil"
+
+dse %>% group_by(Perfil = perfil_label) %>%
+  summarise(M  = fmt_num(mean(decimas)),
+            DE = fmt_num(sd(decimas)),
+            pct = fmt_num(mean(aprueba) * 100, 1)) %>%
+  kable(col.names = c("Perfil", "*M* décimas", "*DE* décimas", "% que lo aprueba"),
+        align = "lrrr")
+```
+
+::: {.nota-apa}
+*Nota.* *N* = `r n_est` estudiantes.
+:::
+
+```{r}
+#| label: tbl-aprueba-n
+#| tbl-cap: "Número de perfiles que aprueba cada estudiante"
+
+dse %>% group_by(id_estudiante) %>% summarise(n_aprobados = sum(aprueba)) %>%
+  count(`Perfiles aprobados` = n_aprobados) %>%
+  mutate(`%` = fmt_num(n / sum(n) * 100, 1)) %>%
+  kable(align = "crr")
+```
+
+# Estrategia de análisis
+
+Se estiman modelos multinivel con las cuatro decisiones (nivel 1) anidadas en el estudiante (nivel 2): logísticos (`glmer`) para la aprobación y lineales (`lmer`) para las décimas. Los atributos del perfil se centran dentro del estudiante (−0,5 / 0,5), de modo que sus coeficientes son efectos promedio. Las variables de nivel 2 se usan **sin centrar** (escala 1–4).
+
+| Modelo | Contenido | Aprobación | Décimas |
+|:--|:--|:-:|:-:|
+| M0 | Nulo (solo intercepto) | ✓ | ✓ |
+| M1 | Nivel 1: esfuerzo, oportunidad y su interacción | ✓ | ✓ |
+| M2 | M1 + efectos principales de nivel 2 | ✓ | — |
+| M3 | M2 + interacciones entre niveles + pendientes aleatorias de esfuerzo y oportunidad | ✓ | ✓ |
+
+: Modelos estimados {#tbl-modelos-plan}
+
+**Variables de nivel 2:** igualdad de oportunidades (`p1_9`: "En Chile, todas las personas tienen las mismas oportunidades para salir adelante"), preferencia por premiar el esfuerzo (`p1_5`: "Quienes más se esfuerzan deberían obtener mayores recompensas que quienes se esfuerzan menos") y mindset de esfuerzo (`p8_1`: "Las personas pueden esforzarse más si lo intentan").
+
+**Interacciones de M3:** esfuerzo × igualdad de oportunidades; esfuerzo × preferencia por premiar el esfuerzo; oportunidad × preferencia por premiar el esfuerzo; esfuerzo × mindset de esfuerzo.
+
+**Por qué no hay M2 ni efectos principales de nivel 2 en las décimas.** Como cada estudiante reparte exactamente 10 décimas, su promedio es 2,5 para todos: no hay varianza entre estudiantes que las variables de nivel 2 puedan explicar, y sus efectos principales son nulos por construcción. En las décimas, las actitudes solo pueden actuar a través de las interacciones.
+
+**Pendientes aleatorias en M3.** Una interacción entre niveles intenta explicar por qué el efecto de un atributo varía entre estudiantes; si el modelo no permite esa variación, los errores estándar de la interacción se subestiman (Heisig y Schaeffer, 2019). Las pendientes se estiman sin correlaciones (`||`) para facilitar la convergencia.
+
+**Muestra común.** Todos los modelos se estiman con los mismos `r n_est_mod` estudiantes (`r n_obs_mod` observaciones), los que respondieron las tres variables de nivel 2, para que el ajuste y los coeficientes sean comparables.
+
+```{r}
+#| label: tbl-desc-nivel2
+#| tbl-cap: "Estadísticos descriptivos y correlaciones de las variables de nivel 2"
+
+vars_n2 <- c(igualdad_oport = "1. Igualdad de oportunidades",
+             pref_esfuerzo  = "2. Preferencia por premiar el esfuerzo",
+             mindset_esf    = "3. Mindset de esfuerzo")
+
+x  <- est_mod %>% select(all_of(names(vars_n2)))
+cm <- cor(x)
+cm_txt <- matrix(sub("^(-?)0\\.", "\\1.", fmt_num(cm)), nrow = nrow(cm))
+cm_txt[upper.tri(cm_txt, diag = TRUE)] <- ""
+cm_txt[cbind(1:3, 1:3)] <- "—"
+
+tibble(Variable = unname(vars_n2),
+       M  = fmt_num(colMeans(x)),
+       DE = fmt_num(apply(x, 2, sd)),
+       `1` = cm_txt[, 1], `2` = cm_txt[, 2], `3` = cm_txt[, 3]) %>%
+  kable(col.names = c("Variable", "*M*", "*DE*", "1", "2", "3"),
+        align = "lrrccc")
+```
+
+::: {.nota-apa}
+*Nota.* *N* = `r n_est_mod` estudiantes. Escalas de 1 (muy en desacuerdo) a 4 (muy de acuerdo). Correlaciones de Pearson.
+:::
+
+```{r}
+#| label: modelos
+#| cache: true
+
+ctrl_glmer <- glmerControl(optimizer = "bobyqa")
+ctrl_lmer  <- lmerControl(optimizer = "bobyqa")
+
+# ---- Aprobación: logit multinivel (aproximación de Laplace en todos) ----
+b0 <- glmer(aprueba ~ 1 + (1 | id_estudiante),
+            data = dse_mod, family = binomial, control = ctrl_glmer)
+
+b1 <- glmer(aprueba ~ esfuerzo_w * oportunidad_w + (1 | id_estudiante),
+            data = dse_mod, family = binomial, control = ctrl_glmer)
+
+b2 <- glmer(aprueba ~ esfuerzo_w * oportunidad_w +
+              igualdad_oport + pref_esfuerzo + mindset_esf +
+              (1 | id_estudiante),
+            data = dse_mod, family = binomial, control = ctrl_glmer)
+
+b3 <- glmer(aprueba ~ esfuerzo_w * oportunidad_w +
+              igualdad_oport + pref_esfuerzo + mindset_esf +
+              esfuerzo_w:igualdad_oport +
+              esfuerzo_w:pref_esfuerzo + oportunidad_w:pref_esfuerzo +
+              esfuerzo_w:mindset_esf +
+              (1 + esfuerzo_w + oportunidad_w || id_estudiante),
+            data = dse_mod, family = binomial, control = ctrl_glmer)
+
+# ---- Décimas: modelo lineal multinivel (máxima verosimilitud, para comparar ajuste) ----
+d0 <- lmer(decimas ~ 1 + (1 | id_estudiante),
+           data = dse_mod, REML = FALSE, control = ctrl_lmer)
+
+d1 <- lmer(decimas ~ esfuerzo_w * oportunidad_w + (1 | id_estudiante),
+           data = dse_mod, REML = FALSE, control = ctrl_lmer)
+
+d3 <- lmer(decimas ~ esfuerzo_w * oportunidad_w +
+             esfuerzo_w:igualdad_oport +
+             esfuerzo_w:pref_esfuerzo + oportunidad_w:pref_esfuerzo +
+             esfuerzo_w:mindset_esf +
+             (1 + esfuerzo_w + oportunidad_w || id_estudiante),
+           data = dse_mod, REML = FALSE, control = ctrl_lmer)
+
+# ---- Etiquetas de los predictores ----
+etiquetas <- c(
+  "(Intercept)"                 = "Intercepto",
+  "esfuerzo_w"                  = "Esfuerzo (se esfuerza más)",
+  "oportunidad_w"               = "Oportunidad (casa grande)",
+  "esfuerzo_w:oportunidad_w"    = "Esfuerzo × Oportunidad",
+  "igualdad_oport"              = "Igualdad de oportunidades",
+  "pref_esfuerzo"               = "Preferencia por premiar el esfuerzo",
+  "mindset_esf"                 = "Mindset de esfuerzo",
+  "esfuerzo_w:igualdad_oport"   = "Esfuerzo × Igualdad de oportunidades",
+  "esfuerzo_w:pref_esfuerzo"    = "Esfuerzo × Preferencia por premiar el esfuerzo",
+  "oportunidad_w:pref_esfuerzo" = "Oportunidad × Preferencia por premiar el esfuerzo",
+  "esfuerzo_w:mindset_esf"      = "Esfuerzo × Mindset de esfuerzo",
+  "mercado_educ"                = "Justicia de mercado en educación",
+  "merecen_soc"                 = "Creencia en un mundo justo",
+  "privilegio_percibido"        = "Privilegio percibido",
+  "oportunidad_w:mindset_esf"   = "Oportunidad × Mindset de esfuerzo",
+  "oportunidad_w:igualdad_oport" = "Oportunidad × Igualdad de oportunidades",
+  "esfuerzo_w:mercado_educ"     = "Esfuerzo × Justicia de mercado en educación",
+  "oportunidad_w:mercado_educ"  = "Oportunidad × Justicia de mercado en educación",
+  "esfuerzo_w:merecen_soc"      = "Esfuerzo × Creencia en un mundo justo",
+  "oportunidad_w:merecen_soc"   = "Oportunidad × Creencia en un mundo justo",
+  "esfuerzo_w:privilegio_percibido"    = "Esfuerzo × Privilegio percibido",
+  "oportunidad_w:privilegio_percibido" = "Oportunidad × Privilegio percibido"
+)
+
+# ---- Componentes de varianza (— si el modelo no los incluye) ----
+var_re <- function(m, termino) {
+  vc <- as.data.frame(VarCorr(m))
+  x  <- vc$vcov[vc$var1 == termino & !is.na(vc$var1) & is.na(vc$var2) & vc$grp != "Residual"]
+  if (length(x) == 0) NA_real_ else sum(x)
+}
+fmt_var <- function(x) ifelse(is.na(x), "—", fmt_num(x, 3))
+
+# ---- Prueba de razón de verosimilitud de cada modelo contra el anterior ----
+chi_txt <- function(tabla) {
+  out <- paste0(fmt_num(tabla$Chisq), " (", tabla$Df, ")",
+                case_when(tabla$`Pr(>Chisq)` < .001 ~ "***",
+                          tabla$`Pr(>Chisq)` < .01  ~ "**",
+                          tabla$`Pr(>Chisq)` < .05  ~ "*",
+                          TRUE ~ ""))
+  out[1] <- "—"
+  out
+}
+
+# Filas adicionales: varianzas, estudiantes y χ²
+filas_extra <- function(modelos, chi) {
+  filas <- tibble(term = c("Varianza del intercepto (estudiante)",
+                           "Varianza de la pendiente de esfuerzo",
+                           "Varianza de la pendiente de oportunidad",
+                           "Estudiantes",
+                           "χ² (gl) vs. modelo anterior"))
+  for (i in seq_along(modelos)) {
+    m <- modelos[[i]]
+    filas[[names(modelos)[i]]] <- c(fmt_var(var_re(m, "(Intercept)")),
+                                    fmt_var(var_re(m, "esfuerzo_w")),
+                                    fmt_var(var_re(m, "oportunidad_w")),
+                                    as.character(n_est_mod),
+                                    chi[i])
+  }
+  filas
+}
+
+gof_apa <- tribble(
+  ~raw,     ~clean,              ~fmt,
+  "nobs",   "Observaciones",     0,
+  "logLik", "Log-verosimilitud", 2,
+  "aic",    "AIC",               2,
+  "bic",    "BIC",               2
+)
+
+mod_bin <- list("M0" = b0, "M1" = b1, "M2" = b2, "M3" = b3)
+mod_dec <- list("M0" = d0, "M1" = d1, "M3" = d3)
+
+lrt_bin <- anova(b0, b1, b2, b3)
+lrt_dec <- anova(d0, d1, d3)
+```
+
+# Resultados
+
+## Aprobación
+
+```{r}
+#| label: tbl-binaria-logodds
+#| tbl-cap: "Modelos logísticos multinivel de la aprobación de los perfiles (log-odds)"
+
+modelsummary(
+  mod_bin,
+  coef_map     = etiquetas,
+  estimate     = "{estimate}{stars}",
+  statistic    = NULL,
+  stars        = estrellas_apa,
+  fmt          = 2,
+  gof_map      = gof_apa,
+  add_rows     = filas_extra(mod_bin, chi_txt(lrt_bin)),
+  notes        = c(paste0("Coeficientes en log-odds. ",
+                          "Atributos del perfil centrados dentro del estudiante (−0,5 / 0,5); ",
+                          "variables de nivel 2 en su escala original (1–4). ",
+                          "χ² = prueba de razón de verosimilitud respecto del modelo anterior. ",
+                          "Estimación por aproximación de Laplace."),
+                   "* p < .05. ** p < .01. *** p < .001.")
+)
+```
+
+```{r}
+#| label: tbl-binaria-or
+#| tbl-cap: "Modelos logísticos multinivel de la aprobación de los perfiles (razones de odds)"
+
+modelsummary(
+  mod_bin,
+  exponentiate = TRUE,
+  coef_map     = etiquetas,
+  estimate     = "{estimate}{stars}",
+  statistic    = NULL,
+  stars        = estrellas_apa,
+  fmt          = 2,
+  gof_map      = gof_apa,
+  add_rows     = filas_extra(mod_bin, chi_txt(lrt_bin)),
+  notes        = c(paste0("Razones de odds (OR = exponencial del coeficiente en log-odds). ",
+                          "OR > 1: aumenta las odds de aprobar; OR < 1: las reduce. ",
+                          "Atributos del perfil centrados dentro del estudiante (−0,5 / 0,5); ",
+                          "variables de nivel 2 en su escala original (1–4). ",
+                          "χ² = prueba de razón de verosimilitud respecto del modelo anterior. ",
+                          "Estimación por aproximación de Laplace."),
+                   "* p < .05. ** p < .01. *** p < .001.")
+)
+```
+
+**Cómo leer las tablas.** Ambas muestran los mismos modelos: la primera en log-odds (0 = sin efecto) y la segunda en razones de odds (1 = sin efecto). Cada columna es un modelo y cada uno contiene al anterior. En M1, la razón de odds del esfuerzo indica por cuánto se multiplican las odds de aprobar a un perfil que se esfuerza más; una razón de odds de la oportunidad menor que 1 indica **compensación** a favor de la casa pequeña. En M2, las variables de nivel 2 indican si quienes están más de acuerdo con cada afirmación aprueban a más o menos perfiles en total. En M3, las interacciones indican cómo cambia el efecto del atributo por cada punto adicional de acuerdo; como los moderadores no están centrados, los coeficientes de esfuerzo y oportunidad en M3 corresponden a moderadores en 0 y no se comparan con los de M1 y M2.
+
+## Décimas asignadas
+
+```{r}
+#| label: tbl-continua
+#| tbl-cap: "Modelos lineales multinivel de las décimas asignadas"
+
+modelsummary(
+  mod_dec,
+  coef_map     = etiquetas,
+  estimate     = "{estimate}{stars}",
+  statistic    = NULL,
+  stars        = estrellas_apa,
+  fmt          = 2,
+  gof_map      = gof_apa,
+  add_rows     = filas_extra(mod_dec, chi_txt(lrt_dec)),
+  notes        = c(paste0("Coeficientes no estandarizados en décimas. ",
+                          "Atributos del perfil centrados dentro del estudiante (−0,5 / 0,5); ",
+                          "variables de nivel 2 en su escala original (1–4). ",
+                          "No se estima M2 porque el promedio de décimas es 2,5 para todos los estudiantes. ",
+                          "χ² = prueba de razón de verosimilitud respecto del modelo anterior. ",
+                          "Estimación por máxima verosimilitud; valores p con aproximación de Satterthwaite."),
+                   "* p < .05. ** p < .01. *** p < .001.")
+)
+```
+
+**Cómo leer la tabla.** En M1, el coeficiente del esfuerzo es cuántas décimas más recibe, en promedio, un perfil que se esfuerza; el de la oportunidad, cuántas décimas más (o menos, si es negativo) recibe uno con casa grande. En M3, las interacciones indican cuántas décimas cambia ese efecto por cada punto adicional de acuerdo con el moderador. Como en la aprobación, los coeficientes de esfuerzo y oportunidad en M3 corresponden a moderadores en 0. La varianza del intercepto es cero por construcción, porque todos los estudiantes promedian 2,5 décimas.
+
+# Hipótesis de interacción
+
+Las hipótesis plantean que ciertas creencias del estudiante cambian el peso que le da al esfuerzo del perfil (**prima por esfuerzo**) o a sus condiciones en el hogar (**compensación** a la casa pequeña). Como el efecto de la casa grande es negativo (se favorece a la casa pequeña), una interacción positiva con la oportunidad significa **menos** compensación y una negativa, **más**.
+
+| | Moderador | Ítem | Interacción | Signo esperado | Argumento |
+|:-:|:--|:--|:--|:-:|:--|
+| H1 | Preferencia por premiar el esfuerzo | `p1_5`: Quienes más se esfuerzan deberían obtener mayores recompensas que quienes se esfuerzan menos | Esfuerzo × moderador | + | Quien sostiene el principio meritocrático como norma debería aplicarlo al repartir (preferencias meritocráticas; Castillo et al.) |
+| H2 | Mindset de esfuerzo | `p8_1`: Las personas pueden esforzarse más si lo intentan | Esfuerzo × moderador | + | Si el esfuerzo depende de la voluntad, no esforzarse es una elección y es más reprochable (teoría de la atribución) |
+| H3 | Justicia de mercado en educación | `p9_3`: Está bien que aquellos que puedan pagar más tengan mejor educación | Oportunidad × moderador | + | Quien legitima que el origen económico compre ventajas educativas debería compensar menos las desventajas del hogar (justicia de mercado) |
+| H4 | Creencia en un mundo justo | `p1_10`: En Chile, todas las personas obtienen lo que merecen | Oportunidad × moderador | + | Si cada uno obtiene lo que merece, las condiciones de origen no requieren corrección (justificación del sistema) |
+| H5 | Privilegio percibido | Promedio de `p1_3` y `p1_4`: En Chile, a quienes tienen padres ricos / buenos contactos les va mejor | Oportunidad × moderador | − | Quien reconoce que el origen da ventajas debería compensar más a quien tiene peores condiciones (Laffert et al.) |
+
+: Hipótesis de interacción {#tbl-hipotesis}
+
+::: {.nota-apa}
+*Nota.* Todos los moderadores en escala de 1 (muy en desacuerdo) a 4 (muy de acuerdo), sin centrar. Las hipótesis se formularon con conocimiento de un análisis exploratorio previo sobre estos mismos datos, por lo que los resultados deben considerarse exploratorios.
+:::
+
+# Contraste de las hipótesis
+
+Cada hipótesis se contrasta con un modelo propio (H1 a H5), que incluye los atributos del perfil, el moderador y sus interacciones con el esfuerzo y con la oportunidad, más pendientes aleatorias de esfuerzo y oportunidad. El modelo **conjunto** incluye los cinco moderadores y solo las cinco interacciones hipotetizadas, para ver si cada una se sostiene al controlar por las demás. En las décimas no se incluyen los efectos principales de los moderadores, porque el promedio de cada estudiante es siempre 2,5.
+
+Todos los modelos de esta sección se estiman con la misma muestra: los `r n_est_hip` estudiantes (`r n_obs_hip` observaciones) que respondieron los cinco moderadores.
+
+```{r}
+#| label: modelos-hipotesis
+#| cache: true
+
+moderadores_h <- c(H1 = "pref_esfuerzo", H2 = "mindset_esf", H3 = "mercado_educ",
+                   H4 = "merecen_soc", H5 = "privilegio_percibido")
+
+# ---- Un modelo por hipótesis ----
+modelo_h <- function(z, tipo) {
+  if (tipo == "bin") {
+    f <- as.formula(paste0("aprueba ~ esfuerzo_w * oportunidad_w + ", z,
+                           " + esfuerzo_w:", z, " + oportunidad_w:", z,
+                           " + (1 + esfuerzo_w + oportunidad_w || id_estudiante)"))
+    glmer(f, data = dse_hip, family = binomial, control = ctrl_glmer)
+  } else {
+    f <- as.formula(paste0("decimas ~ esfuerzo_w * oportunidad_w",
+                           " + esfuerzo_w:", z, " + oportunidad_w:", z,
+                           " + (1 + esfuerzo_w + oportunidad_w || id_estudiante)"))
+    lmer(f, data = dse_hip, REML = FALSE, control = ctrl_lmer)
+  }
+}
+
+hip_bin <- map(moderadores_h, modelo_h, tipo = "bin")
+hip_dec <- map(moderadores_h, modelo_h, tipo = "dec")
+
+# ---- Modelo conjunto: los cinco moderadores y las cinco interacciones hipotetizadas ----
+hip_bin$Conjunto <- glmer(
+  aprueba ~ esfuerzo_w * oportunidad_w +
+    pref_esfuerzo + mindset_esf + mercado_educ + merecen_soc + privilegio_percibido +
+    esfuerzo_w:pref_esfuerzo + esfuerzo_w:mindset_esf +
+    oportunidad_w:mercado_educ + oportunidad_w:merecen_soc +
+    oportunidad_w:privilegio_percibido +
+    (1 + esfuerzo_w + oportunidad_w || id_estudiante),
+  data = dse_hip, family = binomial, control = ctrl_glmer)
+
+hip_dec$Conjunto <- lmer(
+  decimas ~ esfuerzo_w * oportunidad_w +
+    esfuerzo_w:pref_esfuerzo + esfuerzo_w:mindset_esf +
+    oportunidad_w:mercado_educ + oportunidad_w:merecen_soc +
+    oportunidad_w:privilegio_percibido +
+    (1 + esfuerzo_w + oportunidad_w || id_estudiante),
+  data = dse_hip, REML = FALSE, control = ctrl_lmer)
+
+# Filas de varianzas y estudiantes para estos modelos
+filas_hip <- function(modelos) {
+  filas <- tibble(term = c("Varianza del intercepto (estudiante)",
+                           "Varianza de la pendiente de esfuerzo",
+                           "Varianza de la pendiente de oportunidad",
+                           "Estudiantes"))
+  for (i in seq_along(modelos)) {
+    m <- modelos[[i]]
+    filas[[names(modelos)[i]]] <- c(fmt_var(var_re(m, "(Intercept)")),
+                                    fmt_var(var_re(m, "esfuerzo_w")),
+                                    fmt_var(var_re(m, "oportunidad_w")),
+                                    as.character(n_est_hip))
+  }
+  filas
+}
+
+gof_hip <- tribble(
+  ~raw,    ~clean,          ~fmt,
+  "nobs",  "Observaciones", 0,
+  "aic",   "AIC",           2,
+  "bic",   "BIC",           2
+)
+
+nota_hip <- paste0("Atributos del perfil centrados dentro del estudiante (−0,5 / 0,5); ",
+                   "moderadores en su escala original (1–4). Todos los modelos incluyen ",
+                   "pendientes aleatorias de esfuerzo y oportunidad.")
+```
+
+
+## Resultados
+
+```{r}
+#| label: tbl-contraste
+#| tbl-cap: "Contraste de las hipótesis de interacción"
+
+signo_esp <- c(H1 = 1, H2 = 1, H3 = 1, H4 = 1, H5 = -1)
+termino_h <- c(H1 = "esfuerzo_w:pref_esfuerzo", H2 = "esfuerzo_w:mindset_esf",
+               H3 = "oportunidad_w:mercado_educ", H4 = "oportunidad_w:merecen_soc",
+               H5 = "oportunidad_w:privilegio_percibido")
+
+# Coeficiente y valor p de un término (la última columna es siempre el valor p)
+coef_p <- function(m, term) {
+  ct <- summary(m)$coefficients
+  c(b = unname(ct[term, 1]), p = unname(ct[term, ncol(ct)]))
+}
+estr <- function(p) case_when(p < .001 ~ "***", p < .01 ~ "**", p < .05 ~ "*", TRUE ~ "")
+con_estr  <- function(x, p) paste0(fmt_num(x), estr(p))
+
+map_dfr(names(termino_h), function(h) {
+  t  <- termino_h[[h]]
+  bi <- coef_p(hip_bin[[h]], t); bc <- coef_p(hip_bin$Conjunto, t)
+  di <- coef_p(hip_dec[[h]], t); dc <- coef_p(hip_dec$Conjunto, t)
+  tibble(
+    H           = h,
+    Interacción = unname(etiquetas[t]),
+    Esperado    = if_else(signo_esp[[h]] > 0, "+", "−"),
+    b_ind       = con_estr(bi[["b"]], bi[["p"]]),
+    or_ind      = con_estr(exp(bi[["b"]]), bi[["p"]]),
+    or_conj     = con_estr(exp(bc[["b"]]), bc[["p"]]),
+    d_ind       = con_estr(di[["b"]], di[["p"]]),
+    d_conj      = con_estr(dc[["b"]], dc[["p"]])
+  )
+}) %>%
+  kable(col.names = c("", "Interacción", "Esperado",
+                      "Aprobación: *b*", "Aprobación: *OR*", "Aprobación: *OR* conjunto",
+                      "Décimas: *b*", "Décimas: *b* conjunto"),
+        align = "llcrrrrr")
+```
+
+::: {.nota-apa}
+*Nota.* Coeficiente de la interacción hipotetizada. Aprobación: log-odds (*b*) y razón de odds (*OR*); décimas: diferencia en décimas (*b*). "Conjunto": modelo con las cinco hipótesis a la vez; las demás columnas, modelo propio de cada hipótesis. Un signo positivo en las interacciones con la oportunidad indica menos compensación a la casa pequeña; uno negativo, más. *N* = `r format(n_obs_hip, big.mark = ".")` observaciones de `r n_est_hip` estudiantes. `r nota_hip` \* *p* < .05. \*\* *p* < .01. \*\*\* *p* < .001.
+:::
+
+::: {.callout-note collapse="true"}
+## Ver los modelos completos
+
+```{r}
+#| label: tbl-hip-bin-logodds
+#| tbl-cap: "Contraste de las hipótesis: aprobación (log-odds)"
+
+modelsummary(
+  hip_bin,
+  coef_map  = etiquetas,
+  estimate  = "{estimate}{stars}",
+  statistic = NULL,
+  stars     = estrellas_apa,
+  fmt       = 2,
+  gof_map   = gof_hip,
+  add_rows  = filas_hip(hip_bin),
+  notes     = c(paste("Coeficientes en log-odds.", nota_hip,
+                      "Estimación por aproximación de Laplace."),
+                "* p < .05. ** p < .01. *** p < .001.")
+)
+```
+
+```{r}
+#| label: tbl-hip-bin-or
+#| tbl-cap: "Contraste de las hipótesis: aprobación (razones de odds)"
+
+modelsummary(
+  hip_bin,
+  exponentiate = TRUE,
+  coef_map  = etiquetas,
+  estimate  = "{estimate}{stars}",
+  statistic = NULL,
+  stars     = estrellas_apa,
+  fmt       = 2,
+  gof_map   = gof_hip,
+  add_rows  = filas_hip(hip_bin),
+  notes     = c(paste("Razones de odds. OR > 1: aumenta las odds de aprobar; OR < 1: las reduce.",
+                      nota_hip, "Estimación por aproximación de Laplace."),
+                "* p < .05. ** p < .01. *** p < .001.")
+)
+```
+
+```{r}
+#| label: tbl-hip-dec
+#| tbl-cap: "Contraste de las hipótesis: décimas asignadas"
+
+modelsummary(
+  hip_dec,
+  coef_map  = etiquetas,
+  estimate  = "{estimate}{stars}",
+  statistic = NULL,
+  stars     = estrellas_apa,
+  fmt       = 2,
+  gof_map   = gof_hip,
+  add_rows  = filas_hip(hip_dec),
+  notes     = c(paste("Coeficientes no estandarizados en décimas.", nota_hip,
+                      "Estimación por máxima verosimilitud; valores p con aproximación de Satterthwaite."),
+                "* p < .05. ** p < .01. *** p < .001.")
+)
+```
+
+En cada columna H1 a H5, la interacción que contrasta la hipótesis es la indicada en la @tbl-hipotesis; la otra interacción del mismo moderador se incluye como control. Como los moderadores no están centrados, los coeficientes de esfuerzo y oportunidad corresponden a moderadores en 0 y no se interpretan por sí solos.
+:::
+
+# Referencias
+
+Gilgen, S. (2020). *The Distributional Survey Experiment Method*. [Completar con la referencia completa.]
+
+Heisig, J. P. y Schaeffer, M. (2019). Why you should always include a random slope for the lower-level variable involved in a cross-level interaction. *European Sociological Review, 35*(2), 258–279.

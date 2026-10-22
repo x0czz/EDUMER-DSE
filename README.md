@@ -1,4 +1,5 @@
-# Plantilla de reportes FACSO
+# EDUMER-DSE
 
+Informe publicado:
 
-[Draft](https://x0czz.github.io/EDUMER-DSE/)
+[Ver el informe en GitHub Pages](https://x0czz.github.io/EDUMER-DSE/)

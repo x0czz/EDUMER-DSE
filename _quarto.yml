@@ -2,7 +2,8 @@ project:
   type: default
   output-dir: .
   render:
-    - reporte_metodologico_dse_codigo.qmd
+    - index_corregido.qmd
+    - dse_nivel1_gilgen.qmd
   resources:
     - assets/favicon-2025-20251031.svg
 
