@@ -20,6 +20,8 @@ docs/
 *.synctex.gz
 *.fdb_latexmk
 *.fls
+!index_files/
+!index_files/**
 .Rproj.user
 .Rhistory
 .RData
