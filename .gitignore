@@ -10,10 +10,6 @@ docs/
 *.knit.md
 *_cache/
 *_files/
-!index_corregido_files/
-!index_corregido_files/**
-!reporte_metodologico_dse_codigo_files/
-!reporte_metodologico_dse_codigo_files/**
 *.log
 *.aux
 *.toc

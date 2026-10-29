@@ -2,8 +2,7 @@ project:
   type: default
   output-dir: .
   render:
-    - index_corregido.qmd
-    - dse_nivel1_gilgen.qmd
+    - index.qmd
   resources:
     - assets/favicon-2025-20251031.svg
 
@@ -32,8 +31,6 @@ format:
     include-after-body:
       - includes/logo-link.html
       - includes/citefix.html
-      - includes/renumber.html
-      - includes/code-toggle.html
       - includes/toc-enhance.html
 
 execute:
@@ -41,7 +38,6 @@ execute:
   warning: false
   message: false
   freeze: auto
-  fig-path: "reporte_metodologico_dse_codigo_files/"
 
 lang: es
 
