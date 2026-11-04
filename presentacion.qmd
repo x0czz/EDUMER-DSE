@@ -662,7 +662,7 @@ Efecto del atributo en cada valor del moderador, con IC 95 %. Esfuerzo: décimas
 1. **El experimento funciona:** los estudiantes **premian el esfuerzo** (≈ 1,7 décimas) y **compensan la desventaja** (≈ 0,7 décimas). Es una justicia sensible a la responsabilidad, no una meritocracia pura.
 2. **Suma fija:** como cada estudiante reparte siempre 10 décimas, no hay varianza entre estudiantes en el nivel; las actitudes solo pueden actuar **cambiando el peso** del esfuerzo o la oportunidad (interacciones).
 3. **Multinivel:** es **pertinente** para estimar bien las interacciones y medir la heterogeneidad entre estudiantes.
-4. **Interacciones:** solo el **mindset esfuerzo** es robusto. Las demás (contactos, meritocracia escolar) son **exploratorias**: efectos chicos, seleccionados entre 62 modelos.
+4. **Interacciones:** solo el **mindset esfuerzo** es robusto.
 5. **Lo más importante:** hay **mucha heterogeneidad** en cómo reparten los estudiantes, y sus actitudes **explican poco** de ella.
 
 ## Referencias
