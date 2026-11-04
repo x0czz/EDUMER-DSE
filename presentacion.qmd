@@ -651,7 +651,7 @@ Efecto del atributo en cada valor del moderador, con IC 95 %. Esfuerzo: décimas
 
 - Las interacciones se leen **por cada punto** de acuerdo; el efecto en cada nivel está en el gráfico anterior.
 - **M1 → M2:** el esfuerzo suma **`r fmt(cf("M2", "esfuerzo"))` décimas** y la casa grande resta **`r fmt(abs(cf("M2", "oportunidad")))`**. Las pendientes aleatorias muestran que ese peso **varía mucho** entre estudiantes.
-- **M3, mindset esfuerzo:** **`r fmt(cf("M3", "esfuerzo:pref_esfuerzo"))` décimas más** de efecto del esfuerzo por cada punto de acuerdo (*p* `r fmt_p(cf("M3", "esfuerzo:pref_esfuerzo", "Pr(>|t|)"))`). Es la **única interacción robusta**: mejora el ajuste según el AIC y la razón de verosimilitud, y sobrevive la corrección por comparaciones múltiples.
+- **M3, mindset esfuerzo:** **`r fmt(cf("M3", "esfuerzo:pref_esfuerzo"))` décimas más** de efecto del esfuerzo por cada punto de acuerdo (*p* `r fmt_p(cf("M3", "esfuerzo:pref_esfuerzo", "Pr(>|t|)"))`).
 - **M4, contactos:** quienes perciben que en Chile **no basta con el mérito** también premian **más** el esfuerzo (`r fmt(cf("M4", "esfuerzo:contactos"))`; *p* = `r fmt_p(cf("M4", "esfuerzo:contactos", "Pr(>|t|)"))`). **Preferir** la meritocracia y **percibir** que no existe empujan en la misma dirección.
 - **M5, meritocracia escolar:** quienes ven su escuela como meritocrática **compensan menos** (`r fmt(cf("M5", "oportunidad:merito_escuela"))`; *p* = `r fmt_p(cf("M5", "oportunidad:merito_escuela", "Pr(>|t|)"))`).
 
