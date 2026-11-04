@@ -1,0 +1,475 @@
+---
+title: "Documento metodológico: modelos multinivel del DSE de EDUMER"
+subtitle: "Especificación, centrado y secuencia de modelos con interacciones entre niveles"
+lang: es
+format:
+  html:
+    toc: true
+    toc-title: "Contenidos"
+    toc-depth: 2
+    toc-location: right
+    number-sections: true
+    tbl-cap-location: top
+    code-tools: false
+crossref:
+  fig-title: "Figura"
+  tbl-title: "Tabla"
+  fig-prefix: "Figura"
+  tbl-prefix: "Tabla"
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{=html}
+<style>
+main table {
+  border-top: 2px solid #000 !important;
+  border-bottom: 2px solid #000 !important;
+  border-collapse: collapse;
+}
+main table thead th { border-bottom: 1px solid #000 !important; border-top: none !important; }
+main table td, main table th { border-left: none !important; border-right: none !important; }
+main table tbody td { border-bottom: none !important; border-top: none !important; }
+main table td, main table th { padding: 0.15rem 0.5rem !important; font-size: 0.88em; line-height: 1.3; }
+.nota-apa { font-size: 0.86em; margin-top: -0.5em; margin-bottom: 1.5em; color: #475569; }
+main table > tbody > tr > * { --bs-table-accent-bg: transparent !important; background: transparent !important; box-shadow: none !important; }
+main table { margin-left: auto; margin-right: auto; width: auto !important; min-width: 65%; }
+main table tr, main table td, main table th { background-color: #fff !important; --bs-table-bg-type: #fff !important; }
+main section.level1 > h1 { color: #002f6c; }
+#title-block-header { border-bottom: 3px solid #002f6c; padding-bottom: 0.8rem; margin-bottom: 1.8rem; }
+#title-block-header .title { color: #002f6c; }
+#title-block-header .subtitle { color: #475569; }
+main section.level1 { margin-top: 2.2rem; }
+caption { color: #475569 !important; font-style: italic; }
+.callout { border-left-color: #002f6c !important; }
+main table td:not(:first-child), main table th:not(:first-child) { white-space: nowrap; }
+pre.salida { font-size: 0.78em; line-height: 1.25; background: #f8fafc; border: 1px solid #e5e7eb; padding: 0.6rem; }
+</style>
+```
+
+```{r}
+#| label: setup
+#| include: false
+
+# Paquetes: install.packages(c("tidyverse", "haven", "lme4", "lmerTest", "knitr"))
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(haven)
+  library(lme4)
+  library(lmerTest)
+  library(knitr)
+})
+options(knitr.kable.NA = "", scipen = 999)
+
+fmt   <- function(x, d = 2) { x <- ifelse(abs(x) < 0.5 * 10^-d, 0, x); formatC(x, format = "f", digits = d, decimal.mark = ",", big.mark = ".") }
+fmt_p <- function(p) ifelse(p < .001, "< ,001", sub("^0,", ",", fmt(p, 3)))
+estr  <- function(p) case_when(p < .001 ~ "***", p < .01 ~ "**", p < .05 ~ "*", TRUE ~ "")
+tabla <- function(df, ...) kable(df, format = "html", escape = FALSE, ...)
+ctrl  <- lmerControl(optimizer = "bobyqa", check.conv.singular = "ignore")
+```
+
+```{r}
+#| label: datos
+
+load("input/db_proc_students_w02.RData")
+limpiar <- function(x) na_if(na_if(as.numeric(zap_labels(x)), 88), 99)
+
+validos <- db_students_w02 %>%
+  mutate(across(starts_with("exp_t4_"), ~ as.numeric(zap_labels(.x)))) %>%
+  filter(exp_t4_a + exp_t4_b + exp_t4_c + exp_t4_d == 10)
+n_validos <- nrow(validos)
+
+# Moderadores seleccionados (sección 5)
+mods_esf <- c(pref_esfuerzo = "p1_5_o2", aspiracion = "p16_o2", contactos = "p1_4_o2")
+mods_opo <- c(padres_ricos  = "p1_7_o2", merito_escuela = "p2_1_o2", intel_maleable = "p8_2_o2")
+etq_mod <- c(
+  pref_esfuerzo  = "Quienes más se esfuerzan deberían obtener más",
+  aspiracion     = "Aspiración educativa (media / técnica / universidad)",
+  contactos      = "En Chile, a quienes tienen buenos contactos les va mejor",
+  padres_ricos   = "Está bien que a quienes tienen padres ricos les vaya bien",
+  merito_escuela = "En esta escuela, quienes se esfuerzan obtienen buenas notas",
+  intel_maleable = "Las personas pueden ser más inteligentes si lo intentan")
+
+# Una fila por estudiante: muestra común con datos completos en los seis moderadores
+est <- validos %>%
+  transmute(id_estudiante, A = exp_t4_a, B = exp_t4_b, C = exp_t4_c, D = exp_t4_d,
+            escuela = as.numeric(zap_labels(d2_o2)),
+            across(all_of(c(mods_esf, mods_opo)), limpiar)) %>%
+  drop_na()
+brutos <- est
+# Moderadores estandarizados (media 0, DE 1)
+est <- est %>% mutate(across(all_of(names(c(mods_esf, mods_opo))), ~ (.x - mean(.x)) / sd(.x)))
+n_est <- nrow(est)
+
+# Formato largo: una fila por estudiante y perfil
+dse <- est %>%
+  pivot_longer(A:D, names_to = "perfil", values_to = "decimas") %>%
+  mutate(esfuerzo    = if_else(perfil %in% c("A", "C"),  0.5, -0.5),
+         oportunidad = if_else(perfil %in% c("B", "C"),  0.5, -0.5))
+n_obs <- nrow(dse)
+```
+
+# Propósito
+
+Este documento describe y justifica las decisiones de modelación del experimento distribucional (DSE) de la ola 2 de EDUMER. Cada estudiante reparte 10 décimas entre cuatro compañeros ficticios con nota 3,7, que cruzan **esfuerzo** (más / menos que la mayoría) y **oportunidad** (casa grande / pequeña para estudiar) en un diseño factorial 2×2 completo.
+
+La variable dependiente son las **décimas asignadas a cada perfil**. Los datos tienen dos niveles: las **cuatro decisiones** (nivel 1) están anidadas en **estudiantes** (nivel 2). La muestra analítica es de **`r fmt(n_est, 0)` estudiantes** y **`r fmt(n_obs, 0)` decisiones**: los `r n_validos` estudiantes con un reparto válido, menos `r n_validos - n_est` sin respuesta en alguno de los seis moderadores. Todos los modelos usan esta misma muestra.
+
+# Estructura de los datos y sus consecuencias
+
+## La suma fija elimina la varianza entre estudiantes
+
+Cada estudiante reparte exactamente 10 décimas, así que **su promedio es siempre 2,5**. La variable dependiente no tiene varianza entre estudiantes: toda su variación ocurre **dentro** de cada estudiante, entre los cuatro perfiles.
+
+```{r}
+#| label: icc
+m_nulo <- lmer(decimas ~ 1 + (1 | id_estudiante), data = dse, REML = FALSE, control = ctrl)
+vc0 <- as.data.frame(VarCorr(m_nulo))
+medias_est <- dse %>% group_by(id_estudiante) %>% summarise(m = mean(decimas))
+```
+
+Un modelo nulo con intercepto aleatorio lo confirma: la varianza del intercepto es `r fmt(vc0$vcov[1], 3)` y la correlación intraclase es **0**. El promedio de las décimas va de `r fmt(min(medias_est$m))` a `r fmt(max(medias_est$m))` entre estudiantes, es decir, es idéntico para todos.
+
+Esto tiene tres consecuencias:
+
+1. **El intercepto aleatorio no tiene varianza que estimar.** Se mantiene en los modelos para que sean anidados entre sí, pero su varianza es siempre 0. Esto genera avisos de ajuste singular, esperables y sin consecuencias para los efectos fijos.
+2. **Las variables de nivel 2 no tienen efecto principal sobre las décimas.** Si el promedio de todos es 2,5, ninguna característica del estudiante puede subirlo o bajarlo. Sus coeficientes son exactamente 0 por construcción.
+3. **Las variables de nivel 2 solo pueden actuar a través de interacciones.** Pueden cambiar **cómo** reparte el estudiante (cuánto pesa el esfuerzo o la oportunidad), no **cuánto** reparte.
+
+## Lo que sí varía entre estudiantes: las pendientes
+
+Aunque el nivel no varía, **el peso de cada atributo sí varía entre estudiantes**: algunos dan casi todo al que se esfuerza y otros reparten parejo. Esa heterogeneidad se modela con **pendientes aleatorias** del esfuerzo y la oportunidad, y es precisamente lo que los moderadores de nivel 2 buscan explicar.
+
+# Decisiones de centrado
+
+## Nivel 1: codificación de efectos (−0,5 / +0,5)
+
+Esfuerzo y oportunidad se codifican **−0,5 / +0,5**:
+
+| Perfil | Esfuerzo | Oportunidad |
+|:------:|:--------:|:-----------:|
+| A: se esfuerza más, casa pequeña | +0,5 | −0,5 |
+| B: se esfuerza menos, casa grande | −0,5 | +0,5 |
+| C: se esfuerza más, casa grande | +0,5 | +0,5 |
+| D: se esfuerza menos, casa pequeña | −0,5 | −0,5 |
+
+: Codificación de los atributos de nivel 1 {#tbl-codif}
+
+Con esta codificación:
+
+- **Cada coeficiente es una diferencia en décimas** entre los dos niveles del atributo: el coeficiente del esfuerzo es cuánto más recibe el perfil que se esfuerza.
+- **El intercepto es la media general** (2,5 décimas).
+- **Los efectos principales son promedios sobre el otro atributo.** Con una codificación 0/1 y la interacción esfuerzo × oportunidad en el modelo, el coeficiente del esfuerzo sería su efecto **solo para la casa pequeña**. Con −0,5 / +0,5 es el efecto promedio entre ambas casas.
+
+**Centrado dentro del estudiante (CWC) y a la gran media (CGM) son idénticos aquí.** Como el diseño es completo y balanceado, cada estudiante ve los cuatro perfiles, así que el promedio de esfuerzo y de oportunidad **dentro de cada estudiante es 0** y la media general también. La codificación −0,5 / +0,5 ya es, a la vez, un centrado dentro del estudiante y a la gran media.
+
+```{r}
+#| label: tbl-cluster
+#| tbl-cap: "Promedios por estudiante de los predictores de nivel 1"
+
+dse %>%
+  group_by(id_estudiante) %>%
+  summarise(esf = mean(esfuerzo), opo = mean(oportunidad)) %>%
+  summarise(across(c(esf, opo), list(min = min, max = max, de = sd))) %>%
+  pivot_longer(everything(), names_to = c("var", ".value"), names_sep = "_") %>%
+  mutate(var = c("Esfuerzo", "Oportunidad"), across(c(min, max, de), ~ fmt(.x, 2))) %>%
+  tabla(col.names = c("Predictor", "Mínimo del promedio", "Máximo del promedio", "<em>DE</em> entre estudiantes"),
+        align = "lrrr")
+```
+
+## ¿Efecto *within* y *between*? ¿Vale la pena incluir el promedio por estudiante?
+
+En diseños multinivel observacionales, un predictor de nivel 1 suele tener dos componentes: la variación **dentro** del grupo (*within*) y la variación **entre** grupos (*between*). Como pueden tener efectos distintos, se recomienda separarlos: centrar el predictor dentro del grupo e incluir su promedio por grupo (*cluster mean*) como predictor de nivel 2, como en el modelo híbrido o la especificación de Mundlak.
+
+**En este experimento no aplica, y además no es posible**:
+
+- **No hay componente *between*.** La @tbl-cluster muestra que el promedio de esfuerzo y de oportunidad es 0 para **todos** los estudiantes (*DE* = 0). Toda la variación de los atributos es *within*.
+- **El promedio por estudiante es una constante.** Incluirlo sería perfectamente colineal con el intercepto, y el modelo no podría estimarlo.
+- **Los efectos de nivel 1 son puramente *within*, y por lo tanto causales.** Se estiman comparando los repartos de una misma persona entre perfiles asignados por diseño. No hay confusión posible con características del estudiante, que es justamente lo que el *cluster mean* busca controlar en datos observacionales.
+
+Lo mismo vale para la variable dependiente: su promedio por estudiante es siempre 2,5, de modo que tampoco tiene componente *between*.
+
+::: {.callout-note appearance="simple" icon=false}
+**Decisión:** no se incluyen promedios por estudiante. El diseño factorial completo hace que los efectos de nivel 1 sean exclusivamente *within* y que el *cluster mean* sea una constante.
+:::
+
+## Nivel 2: estandarización de los moderadores
+
+Los moderadores de nivel 2 se **centran en la gran media y se estandarizan** (media 0, *DE* 1). Esto tiene tres implicancias:
+
+1. **Los efectos principales de nivel 1 se interpretan en el promedio del moderador.** En un modelo con esfuerzo × *Z*, el coeficiente del esfuerzo es su efecto para un estudiante con valor promedio en *Z*. Sin centrar, sería el efecto para *Z* = 0, un valor fuera de la escala de 1 a 4. Por ejemplo, con la preferencia por premiar el esfuerzo sin centrar, el efecto del esfuerzo sería ≈ 0,6 décimas en lugar de ≈ 1,7.
+2. **Las interacciones son comparables entre moderadores.** Cada coeficiente de interacción es el cambio en el efecto del atributo, en décimas, por cada **desviación estándar** del moderador.
+3. **El centrado no cambia la interacción ni el ajuste.** El coeficiente de la interacción, su error estándar, la log-verosimilitud, el AIC y el BIC son los mismos con o sin centrar. Solo cambia la interpretación de los términos de orden inferior.
+
+Como los moderadores son de nivel 2, centrarlos en la gran media o "dentro del grupo" es lo mismo: cada estudiante tiene un único valor.
+
+# Especificación y estrategia de modelación
+
+## Secuencia de modelos
+
+Todos los modelos son lineales multinivel estimados por **máxima verosimilitud** (para comparar el ajuste con tests de razón de verosimilitud), con grados de libertad de Satterthwaite (`lmerTest`).
+
+| Modelo | Componentes |
+|:--|:--|
+| **M1** | Efectos principales de nivel 1 (esfuerzo y oportunidad) + intercepto aleatorio |
+| **M2** | M1 + pendientes aleatorias del esfuerzo y la oportunidad |
+| **M3a–c** | M2 + un moderador de nivel 2 y su interacción con el **esfuerzo** (uno por modelo) |
+| **M4a–c** | M2 + un moderador de nivel 2 y su interacción con la **oportunidad** (uno por modelo) |
+| **M5** | M2 + los seis moderadores y sus seis interacciones a la vez |
+
+: Secuencia de modelos {#tbl-secuencia}
+
+Formalmente, para la decisión *i* del estudiante *j*:
+
+- **Nivel 1:** décimas~ij~ = β~0j~ + β~1j~ Esfuerzo~ij~ + β~2j~ Oportunidad~ij~ + *e*~ij~
+- **Nivel 2:** β~0j~ = γ~00~ + γ~01~ *Z*~j~ + *u*~0j~; β~1j~ = γ~10~ + γ~11~ *Z*~j~ + *u*~1j~; β~2j~ = γ~20~ + γ~21~ *Z*~j~ + *u*~2j~
+
+γ~11~ y γ~21~ son las interacciones entre niveles. γ~01~ es el efecto principal de nivel 2, que vale 0 por la suma fija.
+
+## Por qué pendientes aleatorias
+
+Una interacción entre niveles explica por qué el efecto de un atributo varía entre estudiantes. Si el modelo no permite esa variación (sin pendientes aleatorias), supone que todos los estudiantes ponderan igual el esfuerzo. Los errores estándar de las interacciones se subestiman y aumentan los falsos positivos (Heisig y Schaeffer, 2019). Las pendientes se estiman **sin correlación entre sí** (`||`), porque con cuatro decisiones por estudiante hay poca información para estimar covarianzas.
+
+## La interacción esfuerzo × oportunidad
+
+Se omite de la secuencia principal para mantener los modelos centrados en los efectos principales del diseño. Incluirla no cambia los demás coeficientes, porque el diseño es ortogonal (ver la sección de robustez).
+
+# Selección de moderadores
+
+```{r}
+#| label: tamizaje
+
+vars_t <- c(paste0("p1_", 1:10, "_o2"), paste0("p2_", 1:3, "_o2"), "p3_o2", "p4_o2", "p5_o2",
+            "p7_o2", "p8_1_o2", "p8_2_o2", paste0("p9_", 1:6, "_o2"), "p16_o2", "p17_o2",
+            "p18_o2", "p19_o2")
+etq_t <- map_chr(vars_t, ~ attr(db_students_w02[[.x]], "label")) %>% setNames(vars_t)
+base_t <- validos %>%
+  mutate(across(all_of(vars_t), limpiar),
+         segundo_medio = as.numeric(as.numeric(zap_labels(nivel_estudiante_o2)) == 2),
+         mujer         = as.numeric(as.numeric(zap_labels(p14_o2)) == 2))
+vars_t <- c(vars_t, "segundo_medio", "mujer")
+etq_t  <- c(etq_t, segundo_medio = "Curso: 2° medio (vs. 7° básico)", mujer = "Género: mujer (vs. hombre u otro)")
+
+tamizaje <- map_dfr(vars_t, function(v) {
+  d <- base_t %>%
+    filter(!is.na(.data[[v]])) %>%
+    transmute(id_estudiante, A = exp_t4_a, B = exp_t4_b, C = exp_t4_c, D = exp_t4_d,
+              z = (.data[[v]] - mean(.data[[v]])) / sd(.data[[v]])) %>%
+    pivot_longer(A:D, names_to = "perfil", values_to = "decimas") %>%
+    mutate(esfuerzo    = if_else(perfil %in% c("A", "C"), 0.5, -0.5),
+           oportunidad = if_else(perfil %in% c("B", "C"), 0.5, -0.5))
+  m0 <- lmer(decimas ~ esfuerzo + oportunidad + (1 + esfuerzo + oportunidad || id_estudiante),
+             data = d, REML = FALSE, control = ctrl)
+  map_dfr(c("esfuerzo", "oportunidad"), function(a) {
+    m <- lmer(as.formula(paste0("decimas ~ esfuerzo + oportunidad + ", a,
+                                ":z + (1 + esfuerzo + oportunidad || id_estudiante)")),
+              data = d, REML = FALSE, control = ctrl)
+    s <- summary(m)$coefficients[paste0(a, ":z"), ]
+    tibble(var = v, etiqueta = etq_t[[v]], atributo = if_else(a == "esfuerzo", "Esfuerzo", "Oportunidad"),
+           b = s[["Estimate"]], ee = s[["Std. Error"]], p = s[["Pr(>|t|)"]],
+           chi = anova(m0, m)$Chisq[2], dAIC = AIC(m) - AIC(m0), dBIC = BIC(m) - BIC(m0),
+           n = n_distinct(d$id_estudiante))
+  })
+}) %>%
+  group_by(atributo) %>% mutate(holm = p.adjust(p, "holm")) %>% ungroup()
+
+top3 <- tamizaje %>% group_by(atributo) %>% slice_min(p, n = 3) %>% ungroup()
+n_mod_t <- length(vars_t)
+```
+
+Los moderadores se eligieron mediante un **tamizaje exploratorio**: se estimaron `r nrow(tamizaje)` modelos, uno por cada combinación de `r n_mod_t` posibles moderadores de la ola 2 (actitudes, percepciones, notas, aspiraciones, educación de los padres, curso y género) con cada atributo. Cada modelo agrega **una sola interacción** a M2 (ver el Anexo A). En este tamizaje no se incluye el efecto principal del moderador, porque vale 0 por la suma fija: incluirlo solo agrega un parámetro sin capacidad explicativa y penaliza el AIC y el BIC. Para cada atributo se seleccionaron las **tres interacciones con menor valor *p***:
+
+```{r}
+#| label: tbl-top3
+#| tbl-cap: "Las tres interacciones seleccionadas para cada atributo"
+
+top3 %>%
+  arrange(atributo, p) %>%
+  transmute(Atributo = atributo, Moderador = etiqueta, b = fmt(b), p = fmt_p(p),
+            `Holm` = fmt_p(holm), `ΔAIC` = fmt(dAIC, 1), `ΔBIC` = fmt(dBIC, 1)) %>%
+  tabla(col.names = c("Atributo", "Moderador", "<em>b</em>", "<em>p</em>", "<em>p</em> Holm", "ΔAIC", "ΔBIC"),
+        align = "llrrrrr")
+```
+
+::: {.nota-apa}
+*Nota.* *b*: cambio en el efecto del atributo (en décimas) por cada *DE* del moderador. ΔAIC y ΔBIC respecto de M2 (negativo = mejor ajuste). *p* Holm: corregido por comparaciones múltiples dentro de cada atributo. Cada modelo se estimó con todos los estudiantes con respuesta en ese moderador.
+:::
+
+::: {.callout-warning appearance="simple"}
+**Advertencia sobre la selección.** Elegir las interacciones por su valor *p* en los mismos datos infla la probabilidad de falsos positivos: con `r nrow(tamizaje)` tests se esperan unos `r round(nrow(tamizaje) * 0.05)` significativos al 5 % solo por azar. **Solo la preferencia por premiar el esfuerzo sobrevive la corrección de Holm y mejora el BIC.** Las demás deben tratarse como **exploratorias** y requieren replicación (por ejemplo, en otra ola de EDUMER).
+:::
+
+# Resultados de la secuencia de modelos
+
+```{r}
+#| label: secuencia
+
+ajustar <- function(f) lmer(as.formula(f), data = dse, REML = FALSE, control = ctrl)
+re_int  <- " + (1 | id_estudiante)"
+re_pend <- " + (1 + esfuerzo + oportunidad || id_estudiante)"
+base_f  <- "decimas ~ esfuerzo + oportunidad"
+
+modelos <- list(M1 = ajustar(paste0(base_f, re_int)),
+                M2 = ajustar(paste0(base_f, re_pend)))
+for (k in seq_along(mods_esf)) {
+  z <- names(mods_esf)[k]
+  modelos[[paste0("M3", letters[k])]] <- ajustar(paste0(base_f, " + ", z, " + esfuerzo:", z, re_pend))
+}
+for (k in seq_along(mods_opo)) {
+  z <- names(mods_opo)[k]
+  modelos[[paste0("M4", letters[k])]] <- ajustar(paste0(base_f, " + ", z, " + oportunidad:", z, re_pend))
+}
+modelos$M5 <- ajustar(paste0(base_f, " + ",
+                             paste(names(c(mods_esf, mods_opo)), collapse = " + "), " + ",
+                             paste0("esfuerzo:", names(mods_esf), collapse = " + "), " + ",
+                             paste0("oportunidad:", names(mods_opo), collapse = " + "), re_pend))
+
+etq_coef <- c("(Intercept)" = "Intercepto", "esfuerzo" = "Esfuerzo", "oportunidad" = "Oportunidad (casa grande)",
+              setNames(etq_mod, names(etq_mod)),
+              setNames(paste("Esfuerzo ×", etq_mod[names(mods_esf)]), paste0("esfuerzo:", names(mods_esf))),
+              setNames(paste("Oportunidad ×", etq_mod[names(mods_opo)]), paste0("oportunidad:", names(mods_opo))))
+
+var_re <- function(m, g) {
+  vc <- as.data.frame(VarCorr(m)); x <- vc$vcov[vc$var1 %in% g & is.na(vc$var2)]
+  if (length(x) == 0) NA_real_ else x[1]
+}
+
+tabla_modelos <- function(nombres) {
+  ms <- modelos[nombres]
+  celdas <- map(ms, function(m) {
+    ct <- summary(m)$coefficients
+    setNames(paste0(fmt(ct[, "Estimate"]), estr(ct[, "Pr(>|t|)"])), rownames(ct))
+  })
+  terminos <- names(etq_coef)[names(etq_coef) %in% unique(unlist(map(celdas, names)))]
+  fila <- function(nombre, valores) tibble(Predictor = nombre, !!!setNames(as.list(valores), nombres))
+  vr <- function(g) map_chr(ms, ~ { v <- var_re(.x, g); if (is.na(v)) "" else fmt(v) })
+  chi <- map_chr(nombres, function(n) {
+    if (n %in% c("M1", "M2")) return("")
+    a <- anova(modelos$M2, modelos[[n]]); paste0(fmt(a$Chisq[2]), estr(a$`Pr(>Chisq)`[2]), " (", a$Df[2], ")")
+  })
+  chi[nombres == "M2"] <- { a <- anova(modelos$M1, modelos$M2); paste0(fmt(a$Chisq[2]), estr(a$`Pr(>Chisq)`[2]), " (", a$Df[2], ")") }
+  bind_rows(
+    map_dfc(celdas, ~ unname(.x[terminos])) %>% mutate(Predictor = unname(etq_coef[terminos]), .before = 1),
+    fila("<em>Efectos aleatorios (varianza)</em>", rep("", length(nombres))),
+    fila("Intercepto", vr("(Intercept)")),
+    fila("Pendiente del esfuerzo", vr("esfuerzo")),
+    fila("Pendiente de la oportunidad", vr("oportunidad")),
+    fila("Residual", map_chr(ms, ~ fmt(sigma(.x)^2))),
+    fila("<em>Ajuste</em>", rep("", length(nombres))),
+    fila("Decisiones / estudiantes", rep(paste(fmt(n_obs, 0), "/", n_est), length(nombres))),
+    fila("Log-verosimilitud", map_chr(ms, ~ fmt(as.numeric(logLik(.x)), 1))),
+    fila("AIC", map_chr(ms, ~ fmt(AIC(.x), 1))),
+    fila("BIC", map_chr(ms, ~ fmt(BIC(.x), 1))),
+    fila("χ² (gl)", chi)
+  ) %>%
+    mutate(across(everything(), ~ replace_na(.x, ""))) %>%
+    tabla(align = paste0("l", strrep("r", length(nombres))))
+}
+nota_tabla <- "*Nota.* Coeficientes no estandarizados, en décimas. Esfuerzo y oportunidad codificados −0,5 / +0,5; moderadores estandarizados (media 0, *DE* 1). Máxima verosimilitud. χ²: test de razón de verosimilitud de M2 frente a M1, y de cada modelo con moderadores frente a M2; entre paréntesis, los grados de libertad. \\* *p* < ,05; \\*\\* *p* < ,01; \\*\\*\\* *p* < ,001."
+```
+
+## Nivel 1 y moderadores del esfuerzo
+
+```{r}
+#| label: tbl-mod-esf
+#| tbl-cap: "Modelos M1 a M3: nivel 1 y moderadores del efecto del esfuerzo"
+tabla_modelos(c("M1", "M2", "M3a", "M3b", "M3c"))
+```
+
+::: {.nota-apa}
+`r nota_tabla`
+:::
+
+## Moderadores de la oportunidad y modelo conjunto
+
+```{r}
+#| label: tbl-mod-opo
+#| tbl-cap: "Modelos M4 y M5: moderadores del efecto de la oportunidad y modelo conjunto"
+tabla_modelos(c("M2", "M4a", "M4b", "M4c", "M5"))
+```
+
+::: {.nota-apa}
+`r nota_tabla`
+:::
+
+```{r}
+#| label: resultados-texto
+cf <- function(m, t) summary(modelos[[m]])$coefficients[t, ]
+red <- function(m, g) (1 - var_re(modelos[[m]], g) / var_re(modelos$M2, g)) * 100
+```
+
+## Lectura de los resultados
+
+**M1, efectos de nivel 1.** El perfil que se esfuerza recibe `r fmt(cf("M1", "esfuerzo")[["Estimate"]])` décimas más, y el de casa grande `r fmt(abs(cf("M1", "oportunidad")[["Estimate"]]))` décimas menos: los estudiantes premian el esfuerzo y compensan la desventaja. La varianza del intercepto es 0, como se anticipó.
+
+**M2, pendientes aleatorias.** Los efectos fijos no cambian, pero el ajuste mejora fuertemente (χ² en la @tbl-mod-esf). Hay mucha heterogeneidad: la desviación estándar de la pendiente del esfuerzo es `r fmt(sqrt(var_re(modelos$M2, "esfuerzo")))` décimas, del mismo orden que el efecto promedio. Algunos estudiantes casi no distinguen por esfuerzo y otros dan 3 o más décimas de ventaja. El error estándar del efecto del esfuerzo pasa de `r fmt(cf("M1", "esfuerzo")[["Std. Error"]], 3)` en M1 a `r fmt(cf("M2", "esfuerzo")[["Std. Error"]], 3)` en M2: sin pendientes aleatorias, el modelo trata como independientes decisiones que dependen del criterio de cada estudiante y subestima la incertidumbre.
+
+**M3 y M4, moderadores uno por uno.** Los efectos principales de los moderadores son **exactamente 0**, como exige la suma fija. Por eso los χ² de estos modelos tienen 2 grados de libertad, aunque solo uno (la interacción) aporta información, y el BIC no mejora. Lo informativo son las interacciones:
+
+- **Preferencia por premiar el esfuerzo × esfuerzo:** `r fmt(cf("M3a", "esfuerzo:pref_esfuerzo")[["Estimate"]])` décimas por *DE* (*p* `r fmt_p(cf("M3a", "esfuerzo:pref_esfuerzo")[["Pr(>|t|)"]])`). Es la única interacción robusta.
+- **Aspiración educativa y percepción de que los contactos importan × esfuerzo:** positivas y significativas al 5 %, pero no sobreviven la corrección por comparaciones múltiples.
+- **Moderadores de la oportunidad:** las interacciones son positivas, es decir, **menos compensación** entre quienes legitiman el privilegio, perciben su escuela como meritocrática o creen que la inteligencia es maleable. Son efectos chicos (≈ 0,1 décimas por *DE*).
+
+**M5, modelo conjunto.** Al estimar todas las interacciones juntas, la preferencia por premiar el esfuerzo sigue siendo claramente significativa (`r fmt(cf("M5", "esfuerzo:pref_esfuerzo")[["Estimate"]])`; *p* `r fmt_p(cf("M5", "esfuerzo:pref_esfuerzo")[["Pr(>|t|)"]])`), la de los contactos queda al límite (*p* = `r fmt_p(cf("M5", "esfuerzo:contactos")[["Pr(>|t|)"]])`) y las demás pierden significancia. M5 mejora el AIC, pero empeora mucho el BIC: agrega 12 parámetros, seis de ellos efectos principales que valen 0. Las seis interacciones reducen la varianza de la pendiente del esfuerzo en un `r fmt(red("M5", "esfuerzo"), 1)` % y la de la oportunidad en un `r fmt(red("M5", "oportunidad"), 1)` %: las actitudes explican una parte pequeña de la heterogeneidad.
+
+# Robustez
+
+```{r}
+#| label: robustez
+m_int  <- ajustar(paste0(base_f, " + esfuerzo:oportunidad", re_pend))
+m_esc  <- lmer(decimas ~ esfuerzo + oportunidad + (1 + esfuerzo + oportunidad || id_estudiante) +
+                 (0 + esfuerzo + oportunidad || escuela), data = dse, REML = FALSE, control = ctrl)
+v_esc  <- as.data.frame(VarCorr(m_esc)) %>% filter(grp %in% c("escuela", "escuela.1"))
+m_prim <- lm(I((A + C) / 2 - (B + D) / 2) ~ pref_esfuerzo, data = est)
+```
+
+- **Interacción esfuerzo × oportunidad.** Al agregarla a M2 vale `r fmt(fixef(m_int)[["esfuerzo:oportunidad"]])` décimas (el esfuerzo pesa algo menos entre los de casa grande). Los efectos de esfuerzo y oportunidad no cambian: `r fmt(fixef(m_int)[["esfuerzo"]])` y `r fmt(fixef(m_int)[["oportunidad"]])`.
+- **Escuela como tercer nivel.** Los estudiantes pertenecen a `r n_distinct(est$escuela)` establecimientos. La varianza entre escuelas de las pendientes es prácticamente 0 (esfuerzo: `r fmt(v_esc$vcov[1], 3)`; oportunidad: `r fmt(v_esc$vcov[2], 3)`), así que no es necesario modelar ese nivel. Además, 9 escuelas son muy pocas para estimar varianzas con precisión.
+- **Equivalencia con las primas individuales.** Como el diseño es balanceado, una regresión común de la prima por esfuerzo de cada estudiante sobre la preferencia da el mismo coeficiente que la interacción de M3a (`r fmt(coef(m_prim)[["pref_esfuerzo"]])` vs. `r fmt(cf("M3a", "esfuerzo:pref_esfuerzo")[["Estimate"]])`).
+
+# Limitaciones
+
+- **Dependencia negativa por la suma fija.** Lo que recibe un perfil se le quita a otro, de modo que los residuos de un mismo estudiante están correlacionados negativamente. El modelo lineal multinivel no la modela explícitamente; los efectos fijos no se ven afectados por el diseño balanceado, pero los errores estándar pueden ser algo imprecisos.
+- **Pocas decisiones por estudiante.** Con cuatro décimas que suman 10, cada estudiante aporta solo tres datos libres para estimar dos pendientes y un residuo.
+- **Las interacciones no son causales.** Los atributos de los perfiles fueron asignados por diseño, pero los moderadores son características observadas de los estudiantes.
+- **Selección exploratoria.** Las interacciones distintas de la preferencia por premiar el esfuerzo se eligieron por su valor *p* entre `r nrow(tamizaje)` modelos y no sobreviven la corrección por comparaciones múltiples.
+
+# Referencias {.unnumbered}
+
+Heisig, J. P., y Schaeffer, M. (2019). Why you should always include a random slope for the lower-level variable involved in a cross-level interaction. *European Sociological Review, 35*(2), 258–279. https://doi.org/10.1093/esr/jcy053
+
+# Anexo A. Todas las interacciones estimadas {#sec-anexo-a .unnumbered}
+
+```{r}
+#| label: tbl-anexo
+#| tbl-cap: "Tamizaje: una interacción por modelo (M2 + moderador + interacción)"
+
+tamizaje %>%
+  arrange(atributo, p) %>%
+  transmute(Atributo = atributo, Moderador = etiqueta, n = fmt(n, 0), b = fmt(b), EE = fmt(ee),
+            p = paste0(fmt_p(p), estr(p)), holm = fmt_p(holm), chi = fmt(chi), dAIC = fmt(dAIC, 1), dBIC = fmt(dBIC, 1)) %>%
+  tabla(col.names = c("Atributo", "Moderador", "<em>n</em>", "<em>b</em>", "<em>EE</em>", "<em>p</em>",
+                      "<em>p</em> Holm", "χ²(1)", "ΔAIC", "ΔBIC"),
+        align = "llrrrrrrrr")
+```
+
+::: {.nota-apa}
+*Nota.* Cada fila es un modelo distinto: décimas ~ esfuerzo + oportunidad + atributo × *Z*, con intercepto y pendientes aleatorias por estudiante. *Z* estandarizado. χ², ΔAIC y ΔBIC frente al mismo modelo sin *Z*. Las escalas Likert van de 1 (muy en desacuerdo) a 4 (muy de acuerdo); "no sabe" y "no responde" se tratan como datos perdidos.
+:::
+
+# Anexo B. Salidas completas de los modelos {.unnumbered}
+
+```{r}
+#| label: salidas
+#| results: asis
+
+for (n in names(modelos)) {
+  titulo <- gsub('"', "'", paste0(n, ": ", deparse1(formula(modelos[[n]]))))
+  cat("\n\n::: {.callout-note collapse=\"true\" title=\"", titulo, "\"}\n\n", sep = "")
+  cat("<pre class=\"salida\">\n")
+  cat(htmltools::htmlEscape(paste(capture.output(print(summary(modelos[[n]]), correlation = FALSE)), collapse = "\n")))
+  cat("\n</pre>\n:::\n")
+}
+```

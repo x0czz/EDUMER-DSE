@@ -3,6 +3,8 @@ project:
   output-dir: .
   render:
     - index.qmd
+    - metodologico.qmd
+    - presentacion.qmd
   resources:
     - assets/favicon-2025-20251031.svg
 

@@ -1,0 +1,3307 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es" xml:lang="es"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.35">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Documento metodológico: modelos multinivel del DSE de EDUMER</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="metodologico_files/libs/clipboard/clipboard.min.js"></script>
+<script src="metodologico_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="metodologico_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="metodologico_files/libs/quarto-html/popper.min.js"></script>
+<script src="metodologico_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="metodologico_files/libs/quarto-html/anchor.min.js"></script>
+<link href="metodologico_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="metodologico_files/libs/quarto-html/quarto-syntax-highlighting-46f66b053e56abd73bb6e954d61a315b.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="metodologico_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="metodologico_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="metodologico_files/libs/bootstrap/bootstrap-50c032be40e761663ca4276471ac9b4e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<style>html{ scroll-behavior: smooth; }</style>
+<style>
+
+#quarto-document-content p,
+
+.page-columns .content p,
+
+.page-columns p,
+
+.quarto-article p,
+
+main.content p,
+
+p {
+
+  text-align: justify !important;
+
+  text-justify: inter-word;
+
+}
+
+</style>
+
+
+
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contenidos</h2>
+   
+  <ul class="collapse">
+  <li><a href="#propósito" id="toc-propósito" class="nav-link active" data-scroll-target="#propósito"><span class="header-section-number">1</span> Propósito</a></li>
+  <li><a href="#estructura-de-los-datos-y-sus-consecuencias" id="toc-estructura-de-los-datos-y-sus-consecuencias" class="nav-link" data-scroll-target="#estructura-de-los-datos-y-sus-consecuencias"><span class="header-section-number">2</span> Estructura de los datos y sus consecuencias</a>
+  <ul class="collapse">
+  <li><a href="#la-suma-fija-elimina-la-varianza-entre-estudiantes" id="toc-la-suma-fija-elimina-la-varianza-entre-estudiantes" class="nav-link" data-scroll-target="#la-suma-fija-elimina-la-varianza-entre-estudiantes"><span class="header-section-number">2.1</span> La suma fija elimina la varianza entre estudiantes</a></li>
+  <li><a href="#lo-que-sí-varía-entre-estudiantes-las-pendientes" id="toc-lo-que-sí-varía-entre-estudiantes-las-pendientes" class="nav-link" data-scroll-target="#lo-que-sí-varía-entre-estudiantes-las-pendientes"><span class="header-section-number">2.2</span> Lo que sí varía entre estudiantes: las pendientes</a></li>
+  </ul></li>
+  <li><a href="#decisiones-de-centrado" id="toc-decisiones-de-centrado" class="nav-link" data-scroll-target="#decisiones-de-centrado"><span class="header-section-number">3</span> Decisiones de centrado</a>
+  <ul class="collapse">
+  <li><a href="#nivel-1-codificación-de-efectos-05-05" id="toc-nivel-1-codificación-de-efectos-05-05" class="nav-link" data-scroll-target="#nivel-1-codificación-de-efectos-05-05"><span class="header-section-number">3.1</span> Nivel 1: codificación de efectos (−0,5 / +0,5)</a></li>
+  <li><a href="#efecto-within-y-between-vale-la-pena-incluir-el-promedio-por-estudiante" id="toc-efecto-within-y-between-vale-la-pena-incluir-el-promedio-por-estudiante" class="nav-link" data-scroll-target="#efecto-within-y-between-vale-la-pena-incluir-el-promedio-por-estudiante"><span class="header-section-number">3.2</span> ¿Efecto <em>within</em> y <em>between</em>? ¿Vale la pena incluir el promedio por estudiante?</a></li>
+  <li><a href="#nivel-2-estandarización-de-los-moderadores" id="toc-nivel-2-estandarización-de-los-moderadores" class="nav-link" data-scroll-target="#nivel-2-estandarización-de-los-moderadores"><span class="header-section-number">3.3</span> Nivel 2: estandarización de los moderadores</a></li>
+  </ul></li>
+  <li><a href="#especificación-y-estrategia-de-modelación" id="toc-especificación-y-estrategia-de-modelación" class="nav-link" data-scroll-target="#especificación-y-estrategia-de-modelación"><span class="header-section-number">4</span> Especificación y estrategia de modelación</a>
+  <ul class="collapse">
+  <li><a href="#secuencia-de-modelos" id="toc-secuencia-de-modelos" class="nav-link" data-scroll-target="#secuencia-de-modelos"><span class="header-section-number">4.1</span> Secuencia de modelos</a></li>
+  <li><a href="#por-qué-pendientes-aleatorias" id="toc-por-qué-pendientes-aleatorias" class="nav-link" data-scroll-target="#por-qué-pendientes-aleatorias"><span class="header-section-number">4.2</span> Por qué pendientes aleatorias</a></li>
+  <li><a href="#la-interacción-esfuerzo-oportunidad" id="toc-la-interacción-esfuerzo-oportunidad" class="nav-link" data-scroll-target="#la-interacción-esfuerzo-oportunidad"><span class="header-section-number">4.3</span> La interacción esfuerzo × oportunidad</a></li>
+  </ul></li>
+  <li><a href="#selección-de-moderadores" id="toc-selección-de-moderadores" class="nav-link" data-scroll-target="#selección-de-moderadores"><span class="header-section-number">5</span> Selección de moderadores</a></li>
+  <li><a href="#resultados-de-la-secuencia-de-modelos" id="toc-resultados-de-la-secuencia-de-modelos" class="nav-link" data-scroll-target="#resultados-de-la-secuencia-de-modelos"><span class="header-section-number">6</span> Resultados de la secuencia de modelos</a>
+  <ul class="collapse">
+  <li><a href="#nivel-1-y-moderadores-del-esfuerzo" id="toc-nivel-1-y-moderadores-del-esfuerzo" class="nav-link" data-scroll-target="#nivel-1-y-moderadores-del-esfuerzo"><span class="header-section-number">6.1</span> Nivel 1 y moderadores del esfuerzo</a></li>
+  <li><a href="#moderadores-de-la-oportunidad-y-modelo-conjunto" id="toc-moderadores-de-la-oportunidad-y-modelo-conjunto" class="nav-link" data-scroll-target="#moderadores-de-la-oportunidad-y-modelo-conjunto"><span class="header-section-number">6.2</span> Moderadores de la oportunidad y modelo conjunto</a></li>
+  <li><a href="#lectura-de-los-resultados" id="toc-lectura-de-los-resultados" class="nav-link" data-scroll-target="#lectura-de-los-resultados"><span class="header-section-number">6.3</span> Lectura de los resultados</a></li>
+  </ul></li>
+  <li><a href="#robustez" id="toc-robustez" class="nav-link" data-scroll-target="#robustez"><span class="header-section-number">7</span> Robustez</a></li>
+  <li><a href="#limitaciones" id="toc-limitaciones" class="nav-link" data-scroll-target="#limitaciones"><span class="header-section-number">8</span> Limitaciones</a></li>
+  <li><a href="#referencias" id="toc-referencias" class="nav-link" data-scroll-target="#referencias">Referencias</a></li>
+  <li><a href="#sec-anexo-a" id="toc-sec-anexo-a" class="nav-link" data-scroll-target="#sec-anexo-a">Anexo A. Todas las interacciones estimadas</a></li>
+  <li><a href="#anexo-b.-salidas-completas-de-los-modelos" id="toc-anexo-b.-salidas-completas-de-los-modelos" class="nav-link" data-scroll-target="#anexo-b.-salidas-completas-de-los-modelos">Anexo B. Salidas completas de los modelos</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Documento metodológico: modelos multinivel del DSE de EDUMER</h1>
+<p class="subtitle lead">Especificación, centrado y secuencia de modelos con interacciones entre niveles</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<style>
+main table {
+  border-top: 2px solid #000 !important;
+  border-bottom: 2px solid #000 !important;
+  border-collapse: collapse;
+}
+main table thead th { border-bottom: 1px solid #000 !important; border-top: none !important; }
+main table td, main table th { border-left: none !important; border-right: none !important; }
+main table tbody td { border-bottom: none !important; border-top: none !important; }
+main table td, main table th { padding: 0.15rem 0.5rem !important; font-size: 0.88em; line-height: 1.3; }
+.nota-apa { font-size: 0.86em; margin-top: -0.5em; margin-bottom: 1.5em; color: #475569; }
+main table > tbody > tr > * { --bs-table-accent-bg: transparent !important; background: transparent !important; box-shadow: none !important; }
+main table { margin-left: auto; margin-right: auto; width: auto !important; min-width: 65%; }
+main table tr, main table td, main table th { background-color: #fff !important; --bs-table-bg-type: #fff !important; }
+main section.level1 > h1 { color: #002f6c; }
+#title-block-header { border-bottom: 3px solid #002f6c; padding-bottom: 0.8rem; margin-bottom: 1.8rem; }
+#title-block-header .title { color: #002f6c; }
+#title-block-header .subtitle { color: #475569; }
+main section.level1 { margin-top: 2.2rem; }
+caption { color: #475569 !important; font-style: italic; }
+.callout { border-left-color: #002f6c !important; }
+main table td:not(:first-child), main table th:not(:first-child) { white-space: nowrap; }
+pre.salida { font-size: 0.78em; line-height: 1.25; background: #f8fafc; border: 1px solid #e5e7eb; padding: 0.6rem; }
+</style>
+<section id="propósito" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Propósito</h1>
+<p>Este documento describe y justifica las decisiones de modelación del experimento distribucional (DSE) de la ola 2 de EDUMER. Cada estudiante reparte 10 décimas entre cuatro compañeros ficticios con nota 3,7, que cruzan <strong>esfuerzo</strong> (más / menos que la mayoría) y <strong>oportunidad</strong> (casa grande / pequeña para estudiar) en un diseño factorial 2×2 completo.</p>
+<p>La variable dependiente son las <strong>décimas asignadas a cada perfil</strong>. Los datos tienen dos niveles: las <strong>cuatro decisiones</strong> (nivel 1) están anidadas en <strong>estudiantes</strong> (nivel 2). La muestra analítica es de <strong>657 estudiantes</strong> y <strong>2.628 decisiones</strong>: los 664 estudiantes con un reparto válido, menos 7 sin respuesta en alguno de los seis moderadores. Todos los modelos usan esta misma muestra.</p>
+</section>
+<section id="estructura-de-los-datos-y-sus-consecuencias" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Estructura de los datos y sus consecuencias</h1>
+<section id="la-suma-fija-elimina-la-varianza-entre-estudiantes" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="la-suma-fija-elimina-la-varianza-entre-estudiantes"><span class="header-section-number">2.1</span> La suma fija elimina la varianza entre estudiantes</h2>
+<p>Cada estudiante reparte exactamente 10 décimas, así que <strong>su promedio es siempre 2,5</strong>. La variable dependiente no tiene varianza entre estudiantes: toda su variación ocurre <strong>dentro</strong> de cada estudiante, entre los cuatro perfiles.</p>
+<p>Un modelo nulo con intercepto aleatorio lo confirma: la varianza del intercepto es 0,000 y la correlación intraclase es <strong>0</strong>. El promedio de las décimas va de 2,50 a 2,50 entre estudiantes, es decir, es idéntico para todos.</p>
+<p>Esto tiene tres consecuencias:</p>
+<ol type="1">
+<li><strong>El intercepto aleatorio no tiene varianza que estimar.</strong> Se mantiene en los modelos para que sean anidados entre sí, pero su varianza es siempre 0. Esto genera avisos de ajuste singular, esperables y sin consecuencias para los efectos fijos.</li>
+<li><strong>Las variables de nivel 2 no tienen efecto principal sobre las décimas.</strong> Si el promedio de todos es 2,5, ninguna característica del estudiante puede subirlo o bajarlo. Sus coeficientes son exactamente 0 por construcción.</li>
+<li><strong>Las variables de nivel 2 solo pueden actuar a través de interacciones.</strong> Pueden cambiar <strong>cómo</strong> reparte el estudiante (cuánto pesa el esfuerzo o la oportunidad), no <strong>cuánto</strong> reparte.</li>
+</ol>
+</section>
+<section id="lo-que-sí-varía-entre-estudiantes-las-pendientes" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="lo-que-sí-varía-entre-estudiantes-las-pendientes"><span class="header-section-number">2.2</span> Lo que sí varía entre estudiantes: las pendientes</h2>
+<p>Aunque el nivel no varía, <strong>el peso de cada atributo sí varía entre estudiantes</strong>: algunos dan casi todo al que se esfuerza y otros reparten parejo. Esa heterogeneidad se modela con <strong>pendientes aleatorias</strong> del esfuerzo y la oportunidad, y es precisamente lo que los moderadores de nivel 2 buscan explicar.</p>
+</section>
+</section>
+<section id="decisiones-de-centrado" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Decisiones de centrado</h1>
+<section id="nivel-1-codificación-de-efectos-05-05" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="nivel-1-codificación-de-efectos-05-05"><span class="header-section-number">3.1</span> Nivel 1: codificación de efectos (−0,5 / +0,5)</h2>
+<p>Esfuerzo y oportunidad se codifican <strong>−0,5 / +0,5</strong>:</p>
+<div id="tbl-codif" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-codif-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Tabla&nbsp;1: Codificación de los atributos de nivel 1
+</figcaption>
+<div aria-describedby="tbl-codif-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: center;">Perfil</th>
+<th style="text-align: center;">Esfuerzo</th>
+<th style="text-align: center;">Oportunidad</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">A: se esfuerza más, casa pequeña</td>
+<td style="text-align: center;">+0,5</td>
+<td style="text-align: center;">−0,5</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">B: se esfuerza menos, casa grande</td>
+<td style="text-align: center;">−0,5</td>
+<td style="text-align: center;">+0,5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">C: se esfuerza más, casa grande</td>
+<td style="text-align: center;">+0,5</td>
+<td style="text-align: center;">+0,5</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">D: se esfuerza menos, casa pequeña</td>
+<td style="text-align: center;">−0,5</td>
+<td style="text-align: center;">−0,5</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>Con esta codificación:</p>
+<ul>
+<li><strong>Cada coeficiente es una diferencia en décimas</strong> entre los dos niveles del atributo: el coeficiente del esfuerzo es cuánto más recibe el perfil que se esfuerza.</li>
+<li><strong>El intercepto es la media general</strong> (2,5 décimas).</li>
+<li><strong>Los efectos principales son promedios sobre el otro atributo.</strong> Con una codificación 0/1 y la interacción esfuerzo × oportunidad en el modelo, el coeficiente del esfuerzo sería su efecto <strong>solo para la casa pequeña</strong>. Con −0,5 / +0,5 es el efecto promedio entre ambas casas.</li>
+</ul>
+<p><strong>Centrado dentro del estudiante (CWC) y a la gran media (CGM) son idénticos aquí.</strong> Como el diseño es completo y balanceado, cada estudiante ve los cuatro perfiles, así que el promedio de esfuerzo y de oportunidad <strong>dentro de cada estudiante es 0</strong> y la media general también. La codificación −0,5 / +0,5 ya es, a la vez, un centrado dentro del estudiante y a la gran media.</p>
+<div class="cell">
+<div id="tbl-cluster" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-cluster-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Tabla&nbsp;2: Promedios por estudiante de los predictores de nivel 1
+</figcaption>
+<div aria-describedby="tbl-cluster-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Predictor</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Mínimo del promedio</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Máximo del promedio</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th"><em>DE</em> entre estudiantes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: right;">0,00</td>
+<td style="text-align: right;">0,00</td>
+<td style="text-align: right;">0,00</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: right;">0,00</td>
+<td style="text-align: right;">0,00</td>
+<td style="text-align: right;">0,00</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section>
+<section id="efecto-within-y-between-vale-la-pena-incluir-el-promedio-por-estudiante" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="efecto-within-y-between-vale-la-pena-incluir-el-promedio-por-estudiante"><span class="header-section-number">3.2</span> ¿Efecto <em>within</em> y <em>between</em>? ¿Vale la pena incluir el promedio por estudiante?</h2>
+<p>En diseños multinivel observacionales, un predictor de nivel 1 suele tener dos componentes: la variación <strong>dentro</strong> del grupo (<em>within</em>) y la variación <strong>entre</strong> grupos (<em>between</em>). Como pueden tener efectos distintos, se recomienda separarlos: centrar el predictor dentro del grupo e incluir su promedio por grupo (<em>cluster mean</em>) como predictor de nivel 2, como en el modelo híbrido o la especificación de Mundlak.</p>
+<p><strong>En este experimento no aplica, y además no es posible</strong>:</p>
+<ul>
+<li><strong>No hay componente <em>between</em>.</strong> La <a href="#tbl-cluster" class="quarto-xref">Tabla&nbsp;2</a> muestra que el promedio de esfuerzo y de oportunidad es 0 para <strong>todos</strong> los estudiantes (<em>DE</em> = 0). Toda la variación de los atributos es <em>within</em>.</li>
+<li><strong>El promedio por estudiante es una constante.</strong> Incluirlo sería perfectamente colineal con el intercepto, y el modelo no podría estimarlo.</li>
+<li><strong>Los efectos de nivel 1 son puramente <em>within</em>, y por lo tanto causales.</strong> Se estiman comparando los repartos de una misma persona entre perfiles asignados por diseño. No hay confusión posible con características del estudiante, que es justamente lo que el <em>cluster mean</em> busca controlar en datos observacionales.</li>
+</ul>
+<p>Lo mismo vale para la variable dependiente: su promedio por estudiante es siempre 2,5, de modo que tampoco tiene componente <em>between</em>.</p>
+<div class="callout callout-style-simple callout-note no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<p><strong>Decisión:</strong> no se incluyen promedios por estudiante. El diseño factorial completo hace que los efectos de nivel 1 sean exclusivamente <em>within</em> y que el <em>cluster mean</em> sea una constante.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="nivel-2-estandarización-de-los-moderadores" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="nivel-2-estandarización-de-los-moderadores"><span class="header-section-number">3.3</span> Nivel 2: estandarización de los moderadores</h2>
+<p>Los moderadores de nivel 2 se <strong>centran en la gran media y se estandarizan</strong> (media 0, <em>DE</em> 1). Esto tiene tres implicancias:</p>
+<ol type="1">
+<li><strong>Los efectos principales de nivel 1 se interpretan en el promedio del moderador.</strong> En un modelo con esfuerzo × <em>Z</em>, el coeficiente del esfuerzo es su efecto para un estudiante con valor promedio en <em>Z</em>. Sin centrar, sería el efecto para <em>Z</em> = 0, un valor fuera de la escala de 1 a 4. Por ejemplo, con la preferencia por premiar el esfuerzo sin centrar, el efecto del esfuerzo sería ≈ 0,6 décimas en lugar de ≈ 1,7.</li>
+<li><strong>Las interacciones son comparables entre moderadores.</strong> Cada coeficiente de interacción es el cambio en el efecto del atributo, en décimas, por cada <strong>desviación estándar</strong> del moderador.</li>
+<li><strong>El centrado no cambia la interacción ni el ajuste.</strong> El coeficiente de la interacción, su error estándar, la log-verosimilitud, el AIC y el BIC son los mismos con o sin centrar. Solo cambia la interpretación de los términos de orden inferior.</li>
+</ol>
+<p>Como los moderadores son de nivel 2, centrarlos en la gran media o “dentro del grupo” es lo mismo: cada estudiante tiene un único valor.</p>
+</section>
+</section>
+<section id="especificación-y-estrategia-de-modelación" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Especificación y estrategia de modelación</h1>
+<section id="secuencia-de-modelos" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="secuencia-de-modelos"><span class="header-section-number">4.1</span> Secuencia de modelos</h2>
+<p>Todos los modelos son lineales multinivel estimados por <strong>máxima verosimilitud</strong> (para comparar el ajuste con tests de razón de verosimilitud), con grados de libertad de Satterthwaite (<code>lmerTest</code>).</p>
+<div id="tbl-secuencia" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-secuencia-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Tabla&nbsp;3: Secuencia de modelos
+</figcaption>
+<div aria-describedby="tbl-secuencia-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Modelo</th>
+<th style="text-align: left;">Componentes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>M1</strong></td>
+<td style="text-align: left;">Efectos principales de nivel 1 (esfuerzo y oportunidad) + intercepto aleatorio</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>M2</strong></td>
+<td style="text-align: left;">M1 + pendientes aleatorias del esfuerzo y la oportunidad</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>M3a–c</strong></td>
+<td style="text-align: left;">M2 + un moderador de nivel 2 y su interacción con el <strong>esfuerzo</strong> (uno por modelo)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>M4a–c</strong></td>
+<td style="text-align: left;">M2 + un moderador de nivel 2 y su interacción con la <strong>oportunidad</strong> (uno por modelo)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>M5</strong></td>
+<td style="text-align: left;">M2 + los seis moderadores y sus seis interacciones a la vez</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>Formalmente, para la decisión <em>i</em> del estudiante <em>j</em>:</p>
+<ul>
+<li><strong>Nivel 1:</strong> décimas<sub>ij</sub> = β<sub>0j</sub> + β<sub>1j</sub> Esfuerzo<sub>ij</sub> + β<sub>2j</sub> Oportunidad<sub>ij</sub> + <em>e</em><sub>ij</sub></li>
+<li><strong>Nivel 2:</strong> β<sub>0j</sub> = γ<sub>00</sub> + γ<sub>01</sub> <em>Z</em><sub>j</sub> + <em>u</em><sub>0j</sub>; β<sub>1j</sub> = γ<sub>10</sub> + γ<sub>11</sub> <em>Z</em><sub>j</sub> + <em>u</em><sub>1j</sub>; β<sub>2j</sub> = γ<sub>20</sub> + γ<sub>21</sub> <em>Z</em><sub>j</sub> + <em>u</em><sub>2j</sub></li>
+</ul>
+<p>γ<sub>11</sub> y γ<sub>21</sub> son las interacciones entre niveles. γ<sub>01</sub> es el efecto principal de nivel 2, que vale 0 por la suma fija.</p>
+</section>
+<section id="por-qué-pendientes-aleatorias" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="por-qué-pendientes-aleatorias"><span class="header-section-number">4.2</span> Por qué pendientes aleatorias</h2>
+<p>Una interacción entre niveles explica por qué el efecto de un atributo varía entre estudiantes. Si el modelo no permite esa variación (sin pendientes aleatorias), supone que todos los estudiantes ponderan igual el esfuerzo. Los errores estándar de las interacciones se subestiman y aumentan los falsos positivos (Heisig y Schaeffer, 2019). Las pendientes se estiman <strong>sin correlación entre sí</strong> (<code>||</code>), porque con cuatro decisiones por estudiante hay poca información para estimar covarianzas.</p>
+</section>
+<section id="la-interacción-esfuerzo-oportunidad" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="la-interacción-esfuerzo-oportunidad"><span class="header-section-number">4.3</span> La interacción esfuerzo × oportunidad</h2>
+<p>Se omite de la secuencia principal para mantener los modelos centrados en los efectos principales del diseño. Incluirla no cambia los demás coeficientes, porque el diseño es ortogonal (ver la sección de robustez).</p>
+</section>
+</section>
+<section id="selección-de-moderadores" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Selección de moderadores</h1>
+<p>Los moderadores se eligieron mediante un <strong>tamizaje exploratorio</strong>: se estimaron 62 modelos, uno por cada combinación de 31 posibles moderadores de la ola 2 (actitudes, percepciones, notas, aspiraciones, educación de los padres, curso y género) con cada atributo. Cada modelo agrega <strong>una sola interacción</strong> a M2 (ver el Anexo A). En este tamizaje no se incluye el efecto principal del moderador, porque vale 0 por la suma fija: incluirlo solo agrega un parámetro sin capacidad explicativa y penaliza el AIC y el BIC. Para cada atributo se seleccionaron las <strong>tres interacciones con menor valor <em>p</em></strong>:</p>
+<div class="cell">
+<div id="tbl-top3" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-top3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Tabla&nbsp;4: Las tres interacciones seleccionadas para cada atributo
+</figcaption>
+<div aria-describedby="tbl-top3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Atributo</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Moderador</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th"><em>b</em></th>
+<th style="text-align: right;" data-quarto-table-cell-role="th"><em>p</em></th>
+<th style="text-align: right;" data-quarto-table-cell-role="th"><em>p</em> Holm</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">ΔAIC</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">ΔBIC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">Quienes más se esfuerzan deberían obtener mayores recompensas que quienes se esfuerzan menos</td>
+<td style="text-align: right;">0,25</td>
+<td style="text-align: right;">&lt; ,001</td>
+<td style="text-align: right;">,003</td>
+<td style="text-align: right;">-13,5</td>
+<td style="text-align: right;">-7,6</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">¿Cuál de los siguientes niveles educacionales crees que vas a completar?</td>
+<td style="text-align: right;">0,17</td>
+<td style="text-align: right;">,006</td>
+<td style="text-align: right;">,186</td>
+<td style="text-align: right;">-5,5</td>
+<td style="text-align: right;">0,4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">En Chile, quienes tienen buenos contactos les va mejor en la vida</td>
+<td style="text-align: right;">0,17</td>
+<td style="text-align: right;">,006</td>
+<td style="text-align: right;">,186</td>
+<td style="text-align: right;">-5,4</td>
+<td style="text-align: right;">0,4</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">Está bien que quienes tienen padres ricos les vaya bien en la vida</td>
+<td style="text-align: right;">0,12</td>
+<td style="text-align: right;">,020</td>
+<td style="text-align: right;">,608</td>
+<td style="text-align: right;">-3,5</td>
+<td style="text-align: right;">2,4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">En esta escuela, quienes se esfuerzan obtienen buenas notas</td>
+<td style="text-align: right;">0,11</td>
+<td style="text-align: right;">,022</td>
+<td style="text-align: right;">,675</td>
+<td style="text-align: right;">-3,2</td>
+<td style="text-align: right;">2,7</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">Las personas pueden ser más inteligentes si lo intentan</td>
+<td style="text-align: right;">0,11</td>
+<td style="text-align: right;">,036</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">-2,4</td>
+<td style="text-align: right;">3,5</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="nota-apa">
+<p><em>Nota.</em> <em>b</em>: cambio en el efecto del atributo (en décimas) por cada <em>DE</em> del moderador. ΔAIC y ΔBIC respecto de M2 (negativo = mejor ajuste). <em>p</em> Holm: corregido por comparaciones múltiples dentro de cada atributo. Cada modelo se estimó con todos los estudiantes con respuesta en ese moderador.</p>
+</div>
+<div class="callout callout-style-simple callout-warning">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-body-container">
+<p><strong>Advertencia sobre la selección.</strong> Elegir las interacciones por su valor <em>p</em> en los mismos datos infla la probabilidad de falsos positivos: con 62 tests se esperan unos 3 significativos al 5 % solo por azar. <strong>Solo la preferencia por premiar el esfuerzo sobrevive la corrección de Holm y mejora el BIC.</strong> Las demás deben tratarse como <strong>exploratorias</strong> y requieren replicación (por ejemplo, en otra ola de EDUMER).</p>
+</div>
+</div>
+</div>
+</section>
+<section id="resultados-de-la-secuencia-de-modelos" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Resultados de la secuencia de modelos</h1>
+<section id="nivel-1-y-moderadores-del-esfuerzo" class="level2" data-number="6.1">
+<h2 data-number="6.1" class="anchored" data-anchor-id="nivel-1-y-moderadores-del-esfuerzo"><span class="header-section-number">6.1</span> Nivel 1 y moderadores del esfuerzo</h2>
+<div class="cell">
+<div id="tbl-mod-esf" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-mod-esf-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Tabla&nbsp;5: Modelos M1 a M3: nivel 1 y moderadores del efecto del esfuerzo
+</figcaption>
+<div aria-describedby="tbl-mod-esf-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Predictor</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">M1</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">M2</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">M3a</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">M3b</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">M3c</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Intercepto</td>
+<td style="text-align: right;">2,50***</td>
+<td style="text-align: right;">2,50***</td>
+<td style="text-align: right;">2,50***</td>
+<td style="text-align: right;">2,50***</td>
+<td style="text-align: right;">2,50***</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: right;">1,67***</td>
+<td style="text-align: right;">1,67***</td>
+<td style="text-align: right;">1,67***</td>
+<td style="text-align: right;">1,67***</td>
+<td style="text-align: right;">1,67***</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Oportunidad (casa grande)</td>
+<td style="text-align: right;">-0,71***</td>
+<td style="text-align: right;">-0,71***</td>
+<td style="text-align: right;">-0,71***</td>
+<td style="text-align: right;">-0,71***</td>
+<td style="text-align: right;">-0,71***</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Quienes más se esfuerzan deberían obtener más</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,00</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Aspiración educativa (media / técnica / universidad)</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,00</td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">En Chile, a quienes tienen buenos contactos les va mejor</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,00</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo × Quienes más se esfuerzan deberían obtener más</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,25***</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Esfuerzo × Aspiración educativa (media / técnica / universidad)</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,16*</td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo × En Chile, a quienes tienen buenos contactos les va mejor</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,17**</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><em>Efectos aleatorios (varianza)</em></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Intercepto</td>
+<td style="text-align: right;">0,00</td>
+<td style="text-align: right;">0,00</td>
+<td style="text-align: right;">0,00</td>
+<td style="text-align: right;">0,00</td>
+<td style="text-align: right;">0,00</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Pendiente del esfuerzo</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">1,95</td>
+<td style="text-align: right;">1,89</td>
+<td style="text-align: right;">1,93</td>
+<td style="text-align: right;">1,92</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Pendiente de la oportunidad</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,97</td>
+<td style="text-align: right;">0,97</td>
+<td style="text-align: right;">0,97</td>
+<td style="text-align: right;">0,97</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Residual</td>
+<td style="text-align: right;">1,39</td>
+<td style="text-align: right;">0,67</td>
+<td style="text-align: right;">0,67</td>
+<td style="text-align: right;">0,67</td>
+<td style="text-align: right;">0,67</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><em>Ajuste</em></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Decisiones / estudiantes</td>
+<td style="text-align: right;">2.628 / 657</td>
+<td style="text-align: right;">2.628 / 657</td>
+<td style="text-align: right;">2.628 / 657</td>
+<td style="text-align: right;">2.628 / 657</td>
+<td style="text-align: right;">2.628 / 657</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Log-verosimilitud</td>
+<td style="text-align: right;">-4.166,3</td>
+<td style="text-align: right;">-3.938,1</td>
+<td style="text-align: right;">-3.930,2</td>
+<td style="text-align: right;">-3.934,9</td>
+<td style="text-align: right;">-3.934,4</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">AIC</td>
+<td style="text-align: right;">8.342,7</td>
+<td style="text-align: right;">7.890,1</td>
+<td style="text-align: right;">7.878,5</td>
+<td style="text-align: right;">7.887,9</td>
+<td style="text-align: right;">7.886,8</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BIC</td>
+<td style="text-align: right;">8.372,0</td>
+<td style="text-align: right;">7.931,2</td>
+<td style="text-align: right;">7.931,3</td>
+<td style="text-align: right;">7.940,8</td>
+<td style="text-align: right;">7.939,6</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">χ² (gl)</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">456,54*** (2)</td>
+<td style="text-align: right;">15,66*** (2)</td>
+<td style="text-align: right;">6,23* (2)</td>
+<td style="text-align: right;">7,35* (2)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="nota-apa">
+<p><em>Nota.</em> Coeficientes no estandarizados, en décimas. Esfuerzo y oportunidad codificados −0,5 / +0,5; moderadores estandarizados (media 0, <em>DE</em> 1). Máxima verosimilitud. χ²: test de razón de verosimilitud de M2 frente a M1, y de cada modelo con moderadores frente a M2; entre paréntesis, los grados de libertad. * <em>p</em> &lt; ,05; ** <em>p</em> &lt; ,01; *** <em>p</em> &lt; ,001.</p>
+</div>
+</section>
+<section id="moderadores-de-la-oportunidad-y-modelo-conjunto" class="level2" data-number="6.2">
+<h2 data-number="6.2" class="anchored" data-anchor-id="moderadores-de-la-oportunidad-y-modelo-conjunto"><span class="header-section-number">6.2</span> Moderadores de la oportunidad y modelo conjunto</h2>
+<div class="cell">
+<div id="tbl-mod-opo" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-mod-opo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Tabla&nbsp;6: Modelos M4 y M5: moderadores del efecto de la oportunidad y modelo conjunto
+</figcaption>
+<div aria-describedby="tbl-mod-opo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Predictor</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">M2</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">M4a</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">M4b</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">M4c</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">M5</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Intercepto</td>
+<td style="text-align: right;">2,50***</td>
+<td style="text-align: right;">2,50***</td>
+<td style="text-align: right;">2,50***</td>
+<td style="text-align: right;">2,50***</td>
+<td style="text-align: right;">2,50***</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: right;">1,67***</td>
+<td style="text-align: right;">1,67***</td>
+<td style="text-align: right;">1,67***</td>
+<td style="text-align: right;">1,67***</td>
+<td style="text-align: right;">1,67***</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Oportunidad (casa grande)</td>
+<td style="text-align: right;">-0,71***</td>
+<td style="text-align: right;">-0,71***</td>
+<td style="text-align: right;">-0,71***</td>
+<td style="text-align: right;">-0,71***</td>
+<td style="text-align: right;">-0,71***</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Quienes más se esfuerzan deberían obtener más</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,00</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Aspiración educativa (media / técnica / universidad)</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,00</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">En Chile, a quienes tienen buenos contactos les va mejor</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,00</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Está bien que a quienes tienen padres ricos les vaya bien</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,00</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,00</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">En esta escuela, quienes se esfuerzan obtienen buenas notas</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,00</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,00</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Las personas pueden ser más inteligentes si lo intentan</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,00</td>
+<td style="text-align: right;">0,00</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Esfuerzo × Quienes más se esfuerzan deberían obtener más</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,22***</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo × Aspiración educativa (media / técnica / universidad)</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,12</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Esfuerzo × En Chile, a quienes tienen buenos contactos les va mejor</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,13*</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Oportunidad × Está bien que a quienes tienen padres ricos les vaya bien</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,10*</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,09</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oportunidad × En esta escuela, quienes se esfuerzan obtienen buenas notas</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,12*</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,10</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Oportunidad × Las personas pueden ser más inteligentes si lo intentan</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0,11*</td>
+<td style="text-align: right;">0,07</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><em>Efectos aleatorios (varianza)</em></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Intercepto</td>
+<td style="text-align: right;">0,00</td>
+<td style="text-align: right;">0,00</td>
+<td style="text-align: right;">0,00</td>
+<td style="text-align: right;">0,00</td>
+<td style="text-align: right;">0,00</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Pendiente del esfuerzo</td>
+<td style="text-align: right;">1,95</td>
+<td style="text-align: right;">1,95</td>
+<td style="text-align: right;">1,95</td>
+<td style="text-align: right;">1,95</td>
+<td style="text-align: right;">1,86</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Pendiente de la oportunidad</td>
+<td style="text-align: right;">0,97</td>
+<td style="text-align: right;">0,96</td>
+<td style="text-align: right;">0,95</td>
+<td style="text-align: right;">0,95</td>
+<td style="text-align: right;">0,94</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Residual</td>
+<td style="text-align: right;">0,67</td>
+<td style="text-align: right;">0,67</td>
+<td style="text-align: right;">0,67</td>
+<td style="text-align: right;">0,67</td>
+<td style="text-align: right;">0,67</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><em>Ajuste</em></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Decisiones / estudiantes</td>
+<td style="text-align: right;">2.628 / 657</td>
+<td style="text-align: right;">2.628 / 657</td>
+<td style="text-align: right;">2.628 / 657</td>
+<td style="text-align: right;">2.628 / 657</td>
+<td style="text-align: right;">2.628 / 657</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Log-verosimilitud</td>
+<td style="text-align: right;">-3.938,1</td>
+<td style="text-align: right;">-3.935,9</td>
+<td style="text-align: right;">-3.935,0</td>
+<td style="text-align: right;">-3.935,5</td>
+<td style="text-align: right;">-3.919,8</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">AIC</td>
+<td style="text-align: right;">7.890,1</td>
+<td style="text-align: right;">7.889,9</td>
+<td style="text-align: right;">7.888,1</td>
+<td style="text-align: right;">7.888,9</td>
+<td style="text-align: right;">7.877,7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BIC</td>
+<td style="text-align: right;">7.931,2</td>
+<td style="text-align: right;">7.942,8</td>
+<td style="text-align: right;">7.940,9</td>
+<td style="text-align: right;">7.941,8</td>
+<td style="text-align: right;">7.989,3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">χ² (gl)</td>
+<td style="text-align: right;">456,54*** (2)</td>
+<td style="text-align: right;">4,22 (2)</td>
+<td style="text-align: right;">6,06* (2)</td>
+<td style="text-align: right;">5,17 (2)</td>
+<td style="text-align: right;">36,46*** (12)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="nota-apa">
+<p><em>Nota.</em> Coeficientes no estandarizados, en décimas. Esfuerzo y oportunidad codificados −0,5 / +0,5; moderadores estandarizados (media 0, <em>DE</em> 1). Máxima verosimilitud. χ²: test de razón de verosimilitud de M2 frente a M1, y de cada modelo con moderadores frente a M2; entre paréntesis, los grados de libertad. * <em>p</em> &lt; ,05; ** <em>p</em> &lt; ,01; *** <em>p</em> &lt; ,001.</p>
+</div>
+</section>
+<section id="lectura-de-los-resultados" class="level2" data-number="6.3">
+<h2 data-number="6.3" class="anchored" data-anchor-id="lectura-de-los-resultados"><span class="header-section-number">6.3</span> Lectura de los resultados</h2>
+<p><strong>M1, efectos de nivel 1.</strong> El perfil que se esfuerza recibe 1,67 décimas más, y el de casa grande 0,71 décimas menos: los estudiantes premian el esfuerzo y compensan la desventaja. La varianza del intercepto es 0, como se anticipó.</p>
+<p><strong>M2, pendientes aleatorias.</strong> Los efectos fijos no cambian, pero el ajuste mejora fuertemente (χ² en la <a href="#tbl-mod-esf" class="quarto-xref">Tabla&nbsp;5</a>). Hay mucha heterogeneidad: la desviación estándar de la pendiente del esfuerzo es 1,40 décimas, del mismo orden que el efecto promedio. Algunos estudiantes casi no distinguen por esfuerzo y otros dan 3 o más décimas de ventaja. El error estándar del efecto del esfuerzo pasa de 0,046 en M1 a 0,063 en M2: sin pendientes aleatorias, el modelo trata como independientes decisiones que dependen del criterio de cada estudiante y subestima la incertidumbre.</p>
+<p><strong>M3 y M4, moderadores uno por uno.</strong> Los efectos principales de los moderadores son <strong>exactamente 0</strong>, como exige la suma fija. Por eso los χ² de estos modelos tienen 2 grados de libertad, aunque solo uno (la interacción) aporta información, y el BIC no mejora. Lo informativo son las interacciones:</p>
+<ul>
+<li><strong>Preferencia por premiar el esfuerzo × esfuerzo:</strong> 0,25 décimas por <em>DE</em> (<em>p</em> &lt; ,001). Es la única interacción robusta.</li>
+<li><strong>Aspiración educativa y percepción de que los contactos importan × esfuerzo:</strong> positivas y significativas al 5 %, pero no sobreviven la corrección por comparaciones múltiples.</li>
+<li><strong>Moderadores de la oportunidad:</strong> las interacciones son positivas, es decir, <strong>menos compensación</strong> entre quienes legitiman el privilegio, perciben su escuela como meritocrática o creen que la inteligencia es maleable. Son efectos chicos (≈ 0,1 décimas por <em>DE</em>).</li>
+</ul>
+<p><strong>M5, modelo conjunto.</strong> Al estimar todas las interacciones juntas, la preferencia por premiar el esfuerzo sigue siendo claramente significativa (0,22; <em>p</em> &lt; ,001), la de los contactos queda al límite (<em>p</em> = ,047) y las demás pierden significancia. M5 mejora el AIC, pero empeora mucho el BIC: agrega 12 parámetros, seis de ellos efectos principales que valen 0. Las seis interacciones reducen la varianza de la pendiente del esfuerzo en un 4,9 % y la de la oportunidad en un 3,1 %: las actitudes explican una parte pequeña de la heterogeneidad.</p>
+</section>
+</section>
+<section id="robustez" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> Robustez</h1>
+<ul>
+<li><strong>Interacción esfuerzo × oportunidad.</strong> Al agregarla a M2 vale -0,15 décimas (el esfuerzo pesa algo menos entre los de casa grande). Los efectos de esfuerzo y oportunidad no cambian: 1,67 y -0,71.</li>
+<li><strong>Escuela como tercer nivel.</strong> Los estudiantes pertenecen a 9 establecimientos. La varianza entre escuelas de las pendientes es prácticamente 0 (esfuerzo: 0,000; oportunidad: 0,006), así que no es necesario modelar ese nivel. Además, 9 escuelas son muy pocas para estimar varianzas con precisión.</li>
+<li><strong>Equivalencia con las primas individuales.</strong> Como el diseño es balanceado, una regresión común de la prima por esfuerzo de cada estudiante sobre la preferencia da el mismo coeficiente que la interacción de M3a (0,25 vs.&nbsp;0,25).</li>
+</ul>
+</section>
+<section id="limitaciones" class="level1" data-number="8">
+<h1 data-number="8"><span class="header-section-number">8</span> Limitaciones</h1>
+<ul>
+<li><strong>Dependencia negativa por la suma fija.</strong> Lo que recibe un perfil se le quita a otro, de modo que los residuos de un mismo estudiante están correlacionados negativamente. El modelo lineal multinivel no la modela explícitamente; los efectos fijos no se ven afectados por el diseño balanceado, pero los errores estándar pueden ser algo imprecisos.</li>
+<li><strong>Pocas decisiones por estudiante.</strong> Con cuatro décimas que suman 10, cada estudiante aporta solo tres datos libres para estimar dos pendientes y un residuo.</li>
+<li><strong>Las interacciones no son causales.</strong> Los atributos de los perfiles fueron asignados por diseño, pero los moderadores son características observadas de los estudiantes.</li>
+<li><strong>Selección exploratoria.</strong> Las interacciones distintas de la preferencia por premiar el esfuerzo se eligieron por su valor <em>p</em> entre 62 modelos y no sobreviven la corrección por comparaciones múltiples.</li>
+</ul>
+</section>
+<section id="referencias" class="level1 unnumbered">
+<h1 class="unnumbered">Referencias</h1>
+<p>Heisig, J. P., y Schaeffer, M. (2019). Why you should always include a random slope for the lower-level variable involved in a cross-level interaction. <em>European Sociological Review, 35</em>(2), 258–279. https://doi.org/10.1093/esr/jcy053</p>
+</section>
+<section id="sec-anexo-a" class="level1 unnumbered">
+<h1 class="unnumbered">Anexo A. Todas las interacciones estimadas</h1>
+<div class="cell">
+<div id="tbl-anexo" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-anexo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Tabla&nbsp;7: Tamizaje: una interacción por modelo (M2 + moderador + interacción)
+</figcaption>
+<div aria-describedby="tbl-anexo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Atributo</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Moderador</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th"><em>n</em></th>
+<th style="text-align: right;" data-quarto-table-cell-role="th"><em>b</em></th>
+<th style="text-align: right;" data-quarto-table-cell-role="th"><em>EE</em></th>
+<th style="text-align: right;" data-quarto-table-cell-role="th"><em>p</em></th>
+<th style="text-align: right;" data-quarto-table-cell-role="th"><em>p</em> Holm</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">χ²(1)</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">ΔAIC</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">ΔBIC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">Quienes más se esfuerzan deberían obtener mayores recompensas que quienes se esfuerzan menos</td>
+<td style="text-align: right;">662</td>
+<td style="text-align: right;">0,25</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">&lt; ,001***</td>
+<td style="text-align: right;">,003</td>
+<td style="text-align: right;">15,47</td>
+<td style="text-align: right;">-13,5</td>
+<td style="text-align: right;">-7,6</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">¿Cuál de los siguientes niveles educacionales crees que vas a completar?</td>
+<td style="text-align: right;">662</td>
+<td style="text-align: right;">0,17</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,006**</td>
+<td style="text-align: right;">,186</td>
+<td style="text-align: right;">7,49</td>
+<td style="text-align: right;">-5,5</td>
+<td style="text-align: right;">0,4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">En Chile, quienes tienen buenos contactos les va mejor en la vida</td>
+<td style="text-align: right;">662</td>
+<td style="text-align: right;">0,17</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,006**</td>
+<td style="text-align: right;">,186</td>
+<td style="text-align: right;">7,43</td>
+<td style="text-align: right;">-5,4</td>
+<td style="text-align: right;">0,4</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">Las personas pueden esforzarse más si lo intentan</td>
+<td style="text-align: right;">663</td>
+<td style="text-align: right;">0,16</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,013*</td>
+<td style="text-align: right;">,370</td>
+<td style="text-align: right;">6,14</td>
+<td style="text-align: right;">-4,1</td>
+<td style="text-align: right;">1,7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">Es responsabilidad del gobierno reducir las diferencias económicas entre las personas con altos ingresos y aquellas con bajos ingresos</td>
+<td style="text-align: right;">661</td>
+<td style="text-align: right;">0,15</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,020*</td>
+<td style="text-align: right;">,534</td>
+<td style="text-align: right;">5,44</td>
+<td style="text-align: right;">-3,4</td>
+<td style="text-align: right;">2,4</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">Está bien que aquellos que puedan pagar más tengan mejor acceso a salud</td>
+<td style="text-align: right;">664</td>
+<td style="text-align: right;">-0,14</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,024*</td>
+<td style="text-align: right;">,617</td>
+<td style="text-align: right;">5,12</td>
+<td style="text-align: right;">-3,1</td>
+<td style="text-align: right;">2,8</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">En Chile, todas las personas tienen las mismas oportunidades para salir adelante</td>
+<td style="text-align: right;">664</td>
+<td style="text-align: right;">-0,14</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,028*</td>
+<td style="text-align: right;">,694</td>
+<td style="text-align: right;">4,85</td>
+<td style="text-align: right;">-2,8</td>
+<td style="text-align: right;">3,0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">En Chile, todas las personas obtienen lo que merecen</td>
+<td style="text-align: right;">662</td>
+<td style="text-align: right;">-0,13</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,040*</td>
+<td style="text-align: right;">,969</td>
+<td style="text-align: right;">4,21</td>
+<td style="text-align: right;">-2,2</td>
+<td style="text-align: right;">3,7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">¿Te parece que este promedio fue más o menos de lo que merecías?</td>
+<td style="text-align: right;">663</td>
+<td style="text-align: right;">-0,13</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,042*</td>
+<td style="text-align: right;">,975</td>
+<td style="text-align: right;">4,12</td>
+<td style="text-align: right;">-2,1</td>
+<td style="text-align: right;">3,8</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">Está bien que aquellos que puedan pagar más tengan mejor educación</td>
+<td style="text-align: right;">663</td>
+<td style="text-align: right;">-0,13</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,044*</td>
+<td style="text-align: right;">,979</td>
+<td style="text-align: right;">4,04</td>
+<td style="text-align: right;">-2,0</td>
+<td style="text-align: right;">3,8</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">Está bien que en Chile las personas con mayores ingresos puedan tener mejores pensiones que las personas de ingresos más bajos.</td>
+<td style="text-align: right;">662</td>
+<td style="text-align: right;">-0,11</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,082</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">3,03</td>
+<td style="text-align: right;">-1,0</td>
+<td style="text-align: right;">4,8</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">Quienes poseen más talento deberían obtener mayores recompensas que quienes poseen menos talento</td>
+<td style="text-align: right;">661</td>
+<td style="text-align: right;">0,10</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,109</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">2,58</td>
+<td style="text-align: right;">-0,6</td>
+<td style="text-align: right;">5,3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">En Chile, a quienes tienen padres ricos les va mucho mejor en la vida</td>
+<td style="text-align: right;">659</td>
+<td style="text-align: right;">0,10</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,129</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">2,31</td>
+<td style="text-align: right;">-0,3</td>
+<td style="text-align: right;">5,6</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">Género: mujer (vs. hombre u otro)</td>
+<td style="text-align: right;">664</td>
+<td style="text-align: right;">0,09</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,152</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">2,06</td>
+<td style="text-align: right;">-0,1</td>
+<td style="text-align: right;">5,8</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">Está bien que quienes tienen buenos contactos les vaya bien en la vida</td>
+<td style="text-align: right;">661</td>
+<td style="text-align: right;">-0,09</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,176</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">1,83</td>
+<td style="text-align: right;">0,2</td>
+<td style="text-align: right;">6,1</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">¿Cuál fue tu promedio final de notas el año pasado? Si no lo recuerdas exactamente, indica una nota aproximada. (entre 1.0 y 7.0)</td>
+<td style="text-align: right;">664</td>
+<td style="text-align: right;">0,07</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,274</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">1,20</td>
+<td style="text-align: right;">0,8</td>
+<td style="text-align: right;">6,7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">Las diferencias económicas entre ricos y pobres en Chile son demasiado grandes</td>
+<td style="text-align: right;">662</td>
+<td style="text-align: right;">0,07</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,280</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">1,17</td>
+<td style="text-align: right;">0,8</td>
+<td style="text-align: right;">6,7</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">¿Cuál es el último curso o nivel de estudios que completó tu padre?</td>
+<td style="text-align: right;">415</td>
+<td style="text-align: right;">-0,09</td>
+<td style="text-align: right;">0,08</td>
+<td style="text-align: right;">,294</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">1,10</td>
+<td style="text-align: right;">0,9</td>
+<td style="text-align: right;">6,3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">Está bien que quienes tienen padres ricos les vaya bien en la vida</td>
+<td style="text-align: right;">661</td>
+<td style="text-align: right;">0,07</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,300</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">1,07</td>
+<td style="text-align: right;">0,9</td>
+<td style="text-align: right;">6,8</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">Está bien que las personas más inteligentes y/o talentosas ganen más dinero, aun cuando requieran esforzarse menos para ello</td>
+<td style="text-align: right;">660</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,324</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,98</td>
+<td style="text-align: right;">1,0</td>
+<td style="text-align: right;">6,9</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">Tomando en cuenta el tiempo que le dedicas a tus estudios, las notas que me saco son…</td>
+<td style="text-align: right;">660</td>
+<td style="text-align: right;">-0,06</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,386</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,75</td>
+<td style="text-align: right;">1,2</td>
+<td style="text-align: right;">7,1</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">Aproximadamente ¿cuántos libros hay en tu hogar?</td>
+<td style="text-align: right;">663</td>
+<td style="text-align: right;">-0,05</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,431</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,62</td>
+<td style="text-align: right;">1,4</td>
+<td style="text-align: right;">7,3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">En Chile, las personas son recompensadas por su inteligencia y habilidad</td>
+<td style="text-align: right;">662</td>
+<td style="text-align: right;">-0,05</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,468</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,53</td>
+<td style="text-align: right;">1,5</td>
+<td style="text-align: right;">7,4</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">En esta escuela, los/as estudiantes obtienen las notas que merecen</td>
+<td style="text-align: right;">662</td>
+<td style="text-align: right;">-0,04</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,495</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,47</td>
+<td style="text-align: right;">1,5</td>
+<td style="text-align: right;">7,4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">En esta escuela, quienes son inteligentes obtienen buenas notas</td>
+<td style="text-align: right;">664</td>
+<td style="text-align: right;">0,04</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,497</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,46</td>
+<td style="text-align: right;">1,5</td>
+<td style="text-align: right;">7,4</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">Curso: 2° medio (vs. 7° básico)</td>
+<td style="text-align: right;">664</td>
+<td style="text-align: right;">0,04</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,502</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,45</td>
+<td style="text-align: right;">1,5</td>
+<td style="text-align: right;">7,4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">En esta escuela, quienes se esfuerzan obtienen buenas notas</td>
+<td style="text-align: right;">663</td>
+<td style="text-align: right;">0,03</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,667</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,18</td>
+<td style="text-align: right;">1,8</td>
+<td style="text-align: right;">7,7</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">¿Cuál es el último curso o nivel de estudios que completó tu madre?</td>
+<td style="text-align: right;">473</td>
+<td style="text-align: right;">0,03</td>
+<td style="text-align: right;">0,08</td>
+<td style="text-align: right;">,674</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,18</td>
+<td style="text-align: right;">1,8</td>
+<td style="text-align: right;">7,4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">¿Qué es más importante para obtener buenas notas, el esfuerzo o la inteligencia? Escala 1 (esfuerzo) a 10 (inteligencia)</td>
+<td style="text-align: right;">657</td>
+<td style="text-align: right;">-0,03</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,682</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,17</td>
+<td style="text-align: right;">1,8</td>
+<td style="text-align: right;">7,7</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">Las personas pueden ser más inteligentes si lo intentan</td>
+<td style="text-align: right;">661</td>
+<td style="text-align: right;">0,02</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,774</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,08</td>
+<td style="text-align: right;">1,9</td>
+<td style="text-align: right;">7,8</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Esfuerzo</td>
+<td style="text-align: left;">En Chile, las personas son recompensadas por sus esfuerzos</td>
+<td style="text-align: right;">664</td>
+<td style="text-align: right;">0,01</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,860</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,03</td>
+<td style="text-align: right;">2,0</td>
+<td style="text-align: right;">7,9</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">Está bien que quienes tienen padres ricos les vaya bien en la vida</td>
+<td style="text-align: right;">661</td>
+<td style="text-align: right;">0,12</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,020*</td>
+<td style="text-align: right;">,608</td>
+<td style="text-align: right;">5,45</td>
+<td style="text-align: right;">-3,5</td>
+<td style="text-align: right;">2,4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">En esta escuela, quienes se esfuerzan obtienen buenas notas</td>
+<td style="text-align: right;">663</td>
+<td style="text-align: right;">0,11</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,022*</td>
+<td style="text-align: right;">,675</td>
+<td style="text-align: right;">5,21</td>
+<td style="text-align: right;">-3,2</td>
+<td style="text-align: right;">2,7</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">Las personas pueden ser más inteligentes si lo intentan</td>
+<td style="text-align: right;">661</td>
+<td style="text-align: right;">0,11</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,036*</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">4,42</td>
+<td style="text-align: right;">-2,4</td>
+<td style="text-align: right;">3,5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">¿Te parece que este promedio fue más o menos de lo que merecías?</td>
+<td style="text-align: right;">663</td>
+<td style="text-align: right;">0,10</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,039*</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">4,27</td>
+<td style="text-align: right;">-2,3</td>
+<td style="text-align: right;">3,6</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">Está bien que aquellos que puedan pagar más tengan mejor educación</td>
+<td style="text-align: right;">663</td>
+<td style="text-align: right;">0,09</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,060</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">3,53</td>
+<td style="text-align: right;">-1,5</td>
+<td style="text-align: right;">4,3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">En Chile, a quienes tienen padres ricos les va mucho mejor en la vida</td>
+<td style="text-align: right;">659</td>
+<td style="text-align: right;">-0,08</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,102</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">2,68</td>
+<td style="text-align: right;">-0,7</td>
+<td style="text-align: right;">5,2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">En Chile, todas las personas obtienen lo que merecen</td>
+<td style="text-align: right;">662</td>
+<td style="text-align: right;">0,07</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,135</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">2,23</td>
+<td style="text-align: right;">-0,2</td>
+<td style="text-align: right;">5,6</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">En Chile, quienes tienen buenos contactos les va mejor en la vida</td>
+<td style="text-align: right;">662</td>
+<td style="text-align: right;">-0,07</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,150</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">2,07</td>
+<td style="text-align: right;">-0,1</td>
+<td style="text-align: right;">5,8</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">En esta escuela, los/as estudiantes obtienen las notas que merecen</td>
+<td style="text-align: right;">662</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,205</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">1,61</td>
+<td style="text-align: right;">0,4</td>
+<td style="text-align: right;">6,3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">Está bien que aquellos que puedan pagar más tengan mejor acceso a salud</td>
+<td style="text-align: right;">664</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,223</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">1,49</td>
+<td style="text-align: right;">0,5</td>
+<td style="text-align: right;">6,4</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">Curso: 2° medio (vs. 7° básico)</td>
+<td style="text-align: right;">664</td>
+<td style="text-align: right;">-0,06</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,265</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">1,24</td>
+<td style="text-align: right;">0,8</td>
+<td style="text-align: right;">6,6</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">Está bien que las personas más inteligentes y/o talentosas ganen más dinero, aun cuando requieran esforzarse menos para ello</td>
+<td style="text-align: right;">660</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,327</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,96</td>
+<td style="text-align: right;">1,0</td>
+<td style="text-align: right;">6,9</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">¿Qué es más importante para obtener buenas notas, el esfuerzo o la inteligencia? Escala 1 (esfuerzo) a 10 (inteligencia)</td>
+<td style="text-align: right;">657</td>
+<td style="text-align: right;">-0,05</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,355</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,86</td>
+<td style="text-align: right;">1,1</td>
+<td style="text-align: right;">7,0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">Está bien que quienes tienen buenos contactos les vaya bien en la vida</td>
+<td style="text-align: right;">661</td>
+<td style="text-align: right;">0,04</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,379</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,77</td>
+<td style="text-align: right;">1,2</td>
+<td style="text-align: right;">7,1</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">Está bien que en Chile las personas con mayores ingresos puedan tener mejores pensiones que las personas de ingresos más bajos.</td>
+<td style="text-align: right;">662</td>
+<td style="text-align: right;">0,04</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,386</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,75</td>
+<td style="text-align: right;">1,2</td>
+<td style="text-align: right;">7,1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">Aproximadamente ¿cuántos libros hay en tu hogar?</td>
+<td style="text-align: right;">663</td>
+<td style="text-align: right;">-0,04</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,401</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,71</td>
+<td style="text-align: right;">1,3</td>
+<td style="text-align: right;">7,2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">Quienes poseen más talento deberían obtener mayores recompensas que quienes poseen menos talento</td>
+<td style="text-align: right;">661</td>
+<td style="text-align: right;">-0,04</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,412</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,67</td>
+<td style="text-align: right;">1,3</td>
+<td style="text-align: right;">7,2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">Género: mujer (vs. hombre u otro)</td>
+<td style="text-align: right;">664</td>
+<td style="text-align: right;">0,04</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,453</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,56</td>
+<td style="text-align: right;">1,4</td>
+<td style="text-align: right;">7,3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">En Chile, las personas son recompensadas por su inteligencia y habilidad</td>
+<td style="text-align: right;">662</td>
+<td style="text-align: right;">0,04</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,455</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,56</td>
+<td style="text-align: right;">1,4</td>
+<td style="text-align: right;">7,3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">Las diferencias económicas entre ricos y pobres en Chile son demasiado grandes</td>
+<td style="text-align: right;">662</td>
+<td style="text-align: right;">0,04</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,461</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,54</td>
+<td style="text-align: right;">1,5</td>
+<td style="text-align: right;">7,3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">¿Cuál es el último curso o nivel de estudios que completó tu madre?</td>
+<td style="text-align: right;">473</td>
+<td style="text-align: right;">-0,05</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,462</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,54</td>
+<td style="text-align: right;">1,5</td>
+<td style="text-align: right;">7,0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">Las personas pueden esforzarse más si lo intentan</td>
+<td style="text-align: right;">663</td>
+<td style="text-align: right;">0,04</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,467</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,53</td>
+<td style="text-align: right;">1,5</td>
+<td style="text-align: right;">7,4</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">En Chile, las personas son recompensadas por sus esfuerzos</td>
+<td style="text-align: right;">664</td>
+<td style="text-align: right;">0,03</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,492</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,47</td>
+<td style="text-align: right;">1,5</td>
+<td style="text-align: right;">7,4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">¿Cuál fue tu promedio final de notas el año pasado? Si no lo recuerdas exactamente, indica una nota aproximada. (entre 1.0 y 7.0)</td>
+<td style="text-align: right;">664</td>
+<td style="text-align: right;">-0,03</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,610</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,26</td>
+<td style="text-align: right;">1,7</td>
+<td style="text-align: right;">7,6</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">Es responsabilidad del gobierno reducir las diferencias económicas entre las personas con altos ingresos y aquellas con bajos ingresos</td>
+<td style="text-align: right;">661</td>
+<td style="text-align: right;">-0,02</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,618</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,25</td>
+<td style="text-align: right;">1,8</td>
+<td style="text-align: right;">7,6</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">En Chile, todas las personas tienen las mismas oportunidades para salir adelante</td>
+<td style="text-align: right;">664</td>
+<td style="text-align: right;">0,02</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,675</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,18</td>
+<td style="text-align: right;">1,8</td>
+<td style="text-align: right;">7,7</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">¿Cuál es el último curso o nivel de estudios que completó tu padre?</td>
+<td style="text-align: right;">415</td>
+<td style="text-align: right;">-0,02</td>
+<td style="text-align: right;">0,06</td>
+<td style="text-align: right;">,781</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,08</td>
+<td style="text-align: right;">1,9</td>
+<td style="text-align: right;">7,3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">En esta escuela, quienes son inteligentes obtienen buenas notas</td>
+<td style="text-align: right;">664</td>
+<td style="text-align: right;">0,01</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,824</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">2,0</td>
+<td style="text-align: right;">7,8</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">¿Cuál de los siguientes niveles educacionales crees que vas a completar?</td>
+<td style="text-align: right;">662</td>
+<td style="text-align: right;">0,01</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,911</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,01</td>
+<td style="text-align: right;">2,0</td>
+<td style="text-align: right;">7,9</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">Quienes más se esfuerzan deberían obtener mayores recompensas que quienes se esfuerzan menos</td>
+<td style="text-align: right;">662</td>
+<td style="text-align: right;">0,00</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,924</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,01</td>
+<td style="text-align: right;">2,0</td>
+<td style="text-align: right;">7,9</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oportunidad</td>
+<td style="text-align: left;">Tomando en cuenta el tiempo que le dedicas a tus estudios, las notas que me saco son…</td>
+<td style="text-align: right;">660</td>
+<td style="text-align: right;">0,00</td>
+<td style="text-align: right;">0,05</td>
+<td style="text-align: right;">,979</td>
+<td style="text-align: right;">1,000</td>
+<td style="text-align: right;">0,00</td>
+<td style="text-align: right;">2,0</td>
+<td style="text-align: right;">7,9</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="nota-apa">
+<p><em>Nota.</em> Cada fila es un modelo distinto: décimas ~ esfuerzo + oportunidad + atributo × <em>Z</em>, con intercepto y pendientes aleatorias por estudiante. <em>Z</em> estandarizado. χ², ΔAIC y ΔBIC frente al mismo modelo sin <em>Z</em>. Las escalas Likert van de 1 (muy en desacuerdo) a 4 (muy de acuerdo); “no sabe” y “no responde” se tratan como datos perdidos.</p>
+</div>
+</section>
+<section id="anexo-b.-salidas-completas-de-los-modelos" class="level1 unnumbered">
+<h1 class="unnumbered">Anexo B. Salidas completas de los modelos</h1>
+<div class="callout callout-style-default callout-note callout-titled" title="M1: decimas ~ esfuerzo + oportunidad + (1 | id_estudiante)">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Nota</span>M1: decimas ~ esfuerzo + oportunidad + (1 | id_estudiante)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<pre class="salida">Linear mixed model fit by maximum likelihood . t-tests use Satterthwaite's
+  method [lmerModLmerTest]
+Formula: as.formula(f)
+   Data: dse
+Control: ctrl
+
+      AIC       BIC    logLik -2*log(L)  df.resid 
+   8342.7    8372.0   -4166.3    8332.7      2623 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.1251 -0.5851 -0.0193  0.5851  6.7542 
+
+Random effects:
+ Groups        Name        Variance Std.Dev.
+ id_estudiante (Intercept) 0.000    0.000   
+ Residual                  1.395    1.181   
+Number of obs: 2628, groups:  id_estudiante, 657
+
+Fixed effects:
+              Estimate Std. Error         df t value            Pr(&gt;|t|)    
+(Intercept)    2.50000    0.02304 2628.00000  108.51 &lt;0.0000000000000002 ***
+esfuerzo       1.66819    0.04608 2628.00000   36.20 &lt;0.0000000000000002 ***
+oportunidad   -0.71385    0.04608 2628.00000  -15.49 &lt;0.0000000000000002 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+</pre>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="M2: decimas ~ esfuerzo + oportunidad + ((1 | id_estudiante) + (0 + esfuerzo | id_estudiante) + (0 + oportunidad | id_estudiante))">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Nota</span>M2: decimas ~ esfuerzo + oportunidad + ((1 | id_estudiante) + (0 + esfuerzo | id_estudiante) + (0 + oportunidad | id_estudiante))
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<pre class="salida">Linear mixed model fit by maximum likelihood . t-tests use Satterthwaite's
+  method [lmerModLmerTest]
+Formula: as.formula(f)
+   Data: dse
+Control: ctrl
+
+      AIC       BIC    logLik -2*log(L)  df.resid 
+   7890.1    7931.2   -3938.1    7876.1      2621 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.9740 -0.3341  0.0198  0.3407  5.1752 
+
+Random effects:
+ Groups          Name        Variance Std.Dev.
+ id_estudiante   (Intercept) 0.0000   0.0000  
+ id_estudiante.1 esfuerzo    1.9523   1.3972  
+ id_estudiante.2 oportunidad 0.9668   0.9833  
+ Residual                    0.6651   0.8156  
+Number of obs: 2628, groups:  id_estudiante, 657
+
+Fixed effects:
+              Estimate Std. Error         df t value            Pr(&gt;|t|)    
+(Intercept)    2.50000    0.01591 1313.99998  157.14 &lt;0.0000000000000002 ***
+esfuerzo       1.66819    0.06312  657.00009   26.43 &lt;0.0000000000000002 ***
+oportunidad   -0.71385    0.04984  656.99997  -14.32 &lt;0.0000000000000002 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+</pre>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="M3a: decimas ~ esfuerzo + oportunidad + pref_esfuerzo + esfuerzo:pref_esfuerzo + ((1 | id_estudiante) + (0 + esfuerzo | id_estudiante) + (0 + oportunidad | id_estudiante))">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Nota</span>M3a: decimas ~ esfuerzo + oportunidad + pref_esfuerzo + esfuerzo:pref_esfuerzo + ((1 | id_estudiante) + (0 + esfuerzo | id_estudiante) + (0 + oportunidad | id_estudiante))
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<pre class="salida">Linear mixed model fit by maximum likelihood . t-tests use Satterthwaite's
+  method [lmerModLmerTest]
+Formula: as.formula(f)
+   Data: dse
+Control: ctrl
+
+      AIC       BIC    logLik -2*log(L)  df.resid 
+   7878.5    7931.3   -3930.2    7860.5      2619 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.9923 -0.3224 -0.0011  0.3290  5.0949 
+
+Random effects:
+ Groups          Name        Variance Std.Dev.
+ id_estudiante   (Intercept) 0.0000   0.0000  
+ id_estudiante.1 esfuerzo    1.8907   1.3750  
+ id_estudiante.2 oportunidad 0.9668   0.9833  
+ Residual                    0.6651   0.8156  
+Number of obs: 2628, groups:  id_estudiante, 657
+
+Fixed effects:
+                                       Estimate               Std. Error
+(Intercept)               2.5000000000000000000    0.0159090909489537323
+esfuerzo                  1.6681887366818854979    0.0623709144705642260
+oportunidad              -0.7138508371385053897    0.0498394615934981203
+pref_esfuerzo             0.0000000000000006864    0.0159212121628637890
+esfuerzo:pref_esfuerzo    0.2484517842796118425    0.0624184351741995172
+                                             df t value             Pr(&gt;|t|)
+(Intercept)            1313.9999584591007533163  157.14 &lt; 0.0000000000000002
+esfuerzo                657.0001261381009953766   26.75 &lt; 0.0000000000000002
+oportunidad             656.9999697268409590833  -14.32 &lt; 0.0000000000000002
+pref_esfuerzo          1313.9999584614186005638    0.00                    1
+esfuerzo:pref_esfuerzo  657.0001265181252847469    3.98            0.0000765
+                          
+(Intercept)            ***
+esfuerzo               ***
+oportunidad            ***
+pref_esfuerzo             
+esfuerzo:pref_esfuerzo ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+</pre>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="M3b: decimas ~ esfuerzo + oportunidad + aspiracion + esfuerzo:aspiracion + ((1 | id_estudiante) + (0 + esfuerzo | id_estudiante) + (0 + oportunidad | id_estudiante))">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Nota</span>M3b: decimas ~ esfuerzo + oportunidad + aspiracion + esfuerzo:aspiracion + ((1 | id_estudiante) + (0 + esfuerzo | id_estudiante) + (0 + oportunidad | id_estudiante))
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<pre class="salida">Linear mixed model fit by maximum likelihood . t-tests use Satterthwaite's
+  method [lmerModLmerTest]
+Formula: as.formula(f)
+   Data: dse
+Control: ctrl
+
+      AIC       BIC    logLik -2*log(L)  df.resid 
+   7887.9    7940.8   -3934.9    7869.9      2619 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.9841 -0.3471  0.0020  0.3441  5.2001 
+
+Random effects:
+ Groups          Name        Variance Std.Dev.
+ id_estudiante   (Intercept) 0.0000   0.0000  
+ id_estudiante.1 esfuerzo    1.9276   1.3884  
+ id_estudiante.2 oportunidad 0.9668   0.9833  
+ Residual                    0.6651   0.8156  
+Number of obs: 2628, groups:  id_estudiante, 657
+
+Fixed effects:
+                                   Estimate              Std. Error
+(Intercept)            2.500000000000000000    0.015909090969939716
+esfuerzo               1.668188736681883944    0.062820079005687715
+oportunidad           -0.713850837138507610    0.049839456876042992
+aspiracion            -0.000000000000001874    0.015921212183865677
+esfuerzo:aspiracion    0.157252805136308044    0.062867941929969862
+                                         df t value            Pr(&gt;|t|)    
+(Intercept)         1313.999934578813281405 157.143 &lt;0.0000000000000002 ***
+esfuerzo             656.999965927027233192  26.555 &lt;0.0000000000000002 ***
+oportunidad          657.000113416797830723 -14.323 &lt;0.0000000000000002 ***
+aspiracion          1313.999934564150635197   0.000              1.0000    
+esfuerzo:aspiracion  656.999966109169236006   2.501              0.0126 *  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+</pre>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="M3c: decimas ~ esfuerzo + oportunidad + contactos + esfuerzo:contactos + ((1 | id_estudiante) + (0 + esfuerzo | id_estudiante) + (0 + oportunidad | id_estudiante))">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Nota</span>M3c: decimas ~ esfuerzo + oportunidad + contactos + esfuerzo:contactos + ((1 | id_estudiante) + (0 + esfuerzo | id_estudiante) + (0 + oportunidad | id_estudiante))
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<pre class="salida">Linear mixed model fit by maximum likelihood . t-tests use Satterthwaite's
+  method [lmerModLmerTest]
+Formula: as.formula(f)
+   Data: dse
+Control: ctrl
+
+      AIC       BIC    logLik -2*log(L)  df.resid 
+   7886.8    7939.6   -3934.4    7868.8      2619 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.9642 -0.3304  0.0025  0.3440  5.1513 
+
+Random effects:
+ Groups          Name        Variance Std.Dev.
+ id_estudiante   (Intercept) 0.0000   0.0000  
+ id_estudiante.1 esfuerzo    1.9232   1.3868  
+ id_estudiante.2 oportunidad 0.9668   0.9833  
+ Residual                    0.6651   0.8156  
+Number of obs: 2628, groups:  id_estudiante, 657
+
+Fixed effects:
+                                  Estimate              Std. Error
+(Intercept)           2.500000000000000000    0.015909090880285130
+esfuerzo              1.668188736681884388    0.062766371589451392
+oportunidad          -0.713850837138511163    0.049839458552746532
+contactos             0.000000000000002126    0.015921212094142816
+esfuerzo:contactos    0.170782020981169985    0.062814193593791354
+                                        df t value             Pr(&gt;|t|)    
+(Intercept)        1313.999952194273646455 157.143 &lt; 0.0000000000000002 ***
+esfuerzo            657.000004714386136584  26.578 &lt; 0.0000000000000002 ***
+oportunidad         657.000062813356976221 -14.323 &lt; 0.0000000000000002 ***
+contactos          1313.999952198464825415   0.000              1.00000    
+esfuerzo:contactos  657.000004904397428618   2.719              0.00672 ** 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+</pre>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="M4a: decimas ~ esfuerzo + oportunidad + padres_ricos + oportunidad:padres_ricos + ((1 | id_estudiante) + (0 + esfuerzo | id_estudiante) + (0 + oportunidad | id_estudiante))">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Nota</span>M4a: decimas ~ esfuerzo + oportunidad + padres_ricos + oportunidad:padres_ricos + ((1 | id_estudiante) + (0 + esfuerzo | id_estudiante) + (0 + oportunidad | id_estudiante))
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<pre class="salida">Linear mixed model fit by maximum likelihood . t-tests use Satterthwaite's
+  method [lmerModLmerTest]
+Formula: as.formula(f)
+   Data: dse
+Control: ctrl
+
+      AIC       BIC    logLik -2*log(L)  df.resid 
+   7889.9    7942.8   -3935.9    7871.9      2619 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.9678 -0.3340  0.0000  0.3472  5.1659 
+
+Random effects:
+ Groups          Name        Variance Std.Dev.
+ id_estudiante   (Intercept) 0.0000   0.0000  
+ id_estudiante.1 esfuerzo    1.9523   1.3972  
+ id_estudiante.2 oportunidad 0.9564   0.9779  
+ Residual                    0.6651   0.8156  
+Number of obs: 2628, groups:  id_estudiante, 657
+
+Fixed effects:
+                                         Estimate               Std. Error
+(Intercept)                 2.5000000000000000000    0.0159090910230728425
+esfuerzo                    1.6681887366818768381    0.0631184854957077407
+oportunidad                -0.7138508371385063889    0.0496797951953485001
+padres_ricos               -0.0000000000000006042    0.0159212122370392568
+oportunidad:padres_ricos    0.1022513542407721687    0.0497176464733684320
+                                               df t value            Pr(&gt;|t|)
+(Intercept)              1313.9999342949829497229 157.143 &lt;0.0000000000000002
+esfuerzo                  657.0000204672894597024  26.429 &lt;0.0000000000000002
+oportunidad               657.0000752310811549251 -14.369 &lt;0.0000000000000002
+padres_ricos             1313.9999342871763019502   0.000              1.0000
+oportunidad:padres_ricos  657.0000751889920138638   2.057              0.0401
+                            
+(Intercept)              ***
+esfuerzo                 ***
+oportunidad              ***
+padres_ricos                
+oportunidad:padres_ricos *  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+</pre>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="M4b: decimas ~ esfuerzo + oportunidad + merito_escuela + oportunidad:merito_escuela + ((1 | id_estudiante) + (0 + esfuerzo | id_estudiante) + (0 + oportunidad | id_estudiante))">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Nota</span>M4b: decimas ~ esfuerzo + oportunidad + merito_escuela + oportunidad:merito_escuela + ((1 | id_estudiante) + (0 + esfuerzo | id_estudiante) + (0 + oportunidad | id_estudiante))
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<pre class="salida">Linear mixed model fit by maximum likelihood . t-tests use Satterthwaite's
+  method [lmerModLmerTest]
+Formula: as.formula(f)
+   Data: dse
+Control: ctrl
+
+      AIC       BIC    logLik -2*log(L)  df.resid 
+   7888.1    7940.9   -3935.0    7870.1      2619 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.9927 -0.3336 -0.0056  0.3389  5.2195 
+
+Random effects:
+ Groups          Name        Variance Std.Dev.
+ id_estudiante   (Intercept) 0.0000   0.0000  
+ id_estudiante.1 esfuerzo    1.9523   1.3972  
+ id_estudiante.2 oportunidad 0.9518   0.9756  
+ Residual                    0.6651   0.8156  
+Number of obs: 2628, groups:  id_estudiante, 657
+
+Fixed effects:
+                                           Estimate               Std. Error
+(Intercept)                   2.5000000000000000000    0.0159090907623591557
+esfuerzo                      1.6681887366819108109    0.0631184848645898744
+oportunidad                  -0.7138508371385130502    0.0496101817834722902
+merito_escuela                0.0000000000000003865    0.0159212119761269651
+oportunidad:merito_escuela    0.1224888910347856491    0.0496479800226955273
+                                                 df t value            Pr(&gt;|t|)
+(Intercept)                1313.9999728445018263301 157.143 &lt;0.0000000000000002
+esfuerzo                    657.0000378268238137025  26.429 &lt;0.0000000000000002
+oportunidad                 657.0000097493232260604 -14.389 &lt;0.0000000000000002
+merito_escuela             1313.9999728429722836154   0.000              1.0000
+oportunidad:merito_escuela  657.0000101570086599168   2.467              0.0139
+                              
+(Intercept)                ***
+esfuerzo                   ***
+oportunidad                ***
+merito_escuela                
+oportunidad:merito_escuela *  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+</pre>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="M4c: decimas ~ esfuerzo + oportunidad + intel_maleable + oportunidad:intel_maleable + ((1 | id_estudiante) + (0 + esfuerzo | id_estudiante) + (0 + oportunidad | id_estudiante))">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Nota</span>M4c: decimas ~ esfuerzo + oportunidad + intel_maleable + oportunidad:intel_maleable + ((1 | id_estudiante) + (0 + esfuerzo | id_estudiante) + (0 + oportunidad | id_estudiante))
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<pre class="salida">Linear mixed model fit by maximum likelihood . t-tests use Satterthwaite's
+  method [lmerModLmerTest]
+Formula: as.formula(f)
+   Data: dse
+Control: ctrl
+
+      AIC       BIC    logLik -2*log(L)  df.resid 
+   7888.9    7941.8   -3935.5    7870.9      2619 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.9552 -0.3325 -0.0056  0.3459  5.2137 
+
+Random effects:
+ Groups          Name        Variance Std.Dev.
+ id_estudiante   (Intercept) 0.0000   0.0000  
+ id_estudiante.1 esfuerzo    1.9523   1.3972  
+ id_estudiante.2 oportunidad 0.9540   0.9767  
+ Residual                    0.6651   0.8156  
+Number of obs: 2628, groups:  id_estudiante, 657
+
+Fixed effects:
+                                           Estimate               Std. Error
+(Intercept)                   2.5000000000000000000    0.0159090912627530175
+esfuerzo                      1.6681887366818706209    0.0631184817763817685
+oportunidad                  -0.7138508371385099416    0.0496436311074899966
+intel_maleable                0.0000000000000002247    0.0159212124769021121
+oportunidad:intel_maleable    0.1132207392553600117    0.0496814548319164176
+                                                 df t value            Pr(&gt;|t|)
+(Intercept)                1313.9999143925977023173 157.143 &lt;0.0000000000000002
+esfuerzo                    657.0001231773683230131  26.429 &lt;0.0000000000000002
+oportunidad                 657.0000316479663524660 -14.380 &lt;0.0000000000000002
+intel_maleable             1313.9999144114815408102   0.000               1.000
+oportunidad:intel_maleable  657.0000315396473524743   2.279               0.023
+                              
+(Intercept)                ***
+esfuerzo                   ***
+oportunidad                ***
+intel_maleable                
+oportunidad:intel_maleable *  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+</pre>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="M5: decimas ~ esfuerzo + oportunidad + pref_esfuerzo + aspiracion + contactos + padres_ricos + merito_escuela + intel_maleable + esfuerzo:pref_esfuerzo + esfuerzo:aspiracion + esfuerzo:contactos + oportunidad:padres_ricos + oportunidad:merito_escuela + oportunidad:intel_maleable + ((1 | id_estudiante) + (0 + esfuerzo | id_estudiante) + (0 + oportunidad | id_estudiante))">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Nota</span>M5: decimas ~ esfuerzo + oportunidad + pref_esfuerzo + aspiracion + contactos + padres_ricos + merito_escuela + intel_maleable + esfuerzo:pref_esfuerzo + esfuerzo:aspiracion + esfuerzo:contactos + oportunidad:padres_ricos + oportunidad:merito_escuela + oportunidad:intel_maleable + ((1 | id_estudiante) + (0 + esfuerzo | id_estudiante) + (0 + oportunidad | id_estudiante))
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<pre class="salida">Linear mixed model fit by maximum likelihood . t-tests use Satterthwaite's
+  method [lmerModLmerTest]
+Formula: as.formula(f)
+   Data: dse
+Control: ctrl
+
+      AIC       BIC    logLik -2*log(L)  df.resid 
+   7877.7    7989.3   -3919.8    7839.7      2609 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.9602 -0.3470 -0.0003  0.3466  5.1107 
+
+Random effects:
+ Groups          Name        Variance Std.Dev.
+ id_estudiante   (Intercept) 0.0000   0.0000  
+ id_estudiante.1 esfuerzo    1.8566   1.3626  
+ id_estudiante.2 oportunidad 0.9373   0.9681  
+ Residual                    0.6651   0.8156  
+Number of obs: 2628, groups:  id_estudiante, 657
+
+Fixed effects:
+                                            Estimate                Std. Error
+(Intercept)                   2.50000000000000000000    0.01590909058877278473
+esfuerzo                      1.66818873668186529180    0.06195384812991065054
+oportunidad                  -0.71385083713851282816    0.04938672644906334785
+pref_esfuerzo                 0.00000000000000044534    0.01666785371716276304
+aspiracion                   -0.00000000000000220016    0.01611788490213610439
+contactos                     0.00000000000000239756    0.01623792274541421138
+padres_ricos                 -0.00000000000000070355    0.01614926885616273233
+merito_escuela                0.00000000000000022538    0.01715183141014842497
+intel_maleable                0.00000000000000007603    0.01686990026468462162
+esfuerzo:pref_esfuerzo        0.22182321628610479625    0.06268731791262721620
+esfuerzo:aspiracion           0.12288849578158174414    0.06266628796186060613
+esfuerzo:contactos            0.12536665794179424616    0.06301529683438834850
+oportunidad:padres_ricos      0.09113670257880221448    0.04979674998236897215
+oportunidad:merito_escuela    0.09838658802336316955    0.05187161689964865652
+oportunidad:intel_maleable    0.07232962680536443589    0.05224272802180199987
+                                                  df t value
+(Intercept)                1313.99998481454804277746 157.143
+esfuerzo                    656.99994336165877939493  26.926
+oportunidad                 657.00006026697371908085 -14.454
+pref_esfuerzo              1313.99998481683451245772   0.000
+aspiracion                 1313.99998481411284956266   0.000
+contactos                  1313.99998480349017881963   0.000
+padres_ricos               1313.99998480729459515715   0.000
+merito_escuela             1313.99998481595184784965   0.000
+intel_maleable             1313.99998481273883044196   0.000
+esfuerzo:pref_esfuerzo      656.99994285108095937176   3.539
+esfuerzo:aspiracion         656.99994273399306621286   1.961
+esfuerzo:contactos          656.99994323446799171506   1.989
+oportunidad:padres_ricos    657.00006048851560080948   1.830
+oportunidad:merito_escuela  657.00005985321547541389   1.897
+oportunidad:intel_maleable  657.00005993821559968637   1.384
+                                       Pr(&gt;|t|)    
+(Intercept)                &lt; 0.0000000000000002 ***
+esfuerzo                   &lt; 0.0000000000000002 ***
+oportunidad                &lt; 0.0000000000000002 ***
+pref_esfuerzo                          1.000000    
+aspiracion                             1.000000    
+contactos                              1.000000    
+padres_ricos                           1.000000    
+merito_escuela                         1.000000    
+intel_maleable                         1.000000    
+esfuerzo:pref_esfuerzo                 0.000431 ***
+esfuerzo:aspiracion                    0.050301 .  
+esfuerzo:contactos                     0.047064 *  
+oportunidad:padres_ricos               0.067677 .  
+oportunidad:merito_escuela             0.058302 .  
+oportunidad:intel_maleable             0.166678    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+</pre>
+</div>
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script>
+
+window.addEventListener('load', function () {
+
+  const selectors = [
+
+    '.quarto-sidebar .logo img',
+
+    '.quarto-sidebar .quarto-logo img',
+
+    '.sidebar-logo img',
+
+    '.site-logo img',
+
+    'a.quarto-site-logo img'
+
+  ];
+
+
+
+  let logoImg = null;
+
+  for (const selector of selectors) {
+
+    logoImg = document.querySelector(selector);
+
+    if (logoImg) break;
+
+  }
+
+
+
+  if (logoImg) {
+
+    const link = document.createElement('a');
+
+    link.href = 'index.html';
+
+    logoImg.parentNode.insertBefore(link, logoImg);
+
+    link.appendChild(logoImg);
+
+  }
+
+
+
+  const decodeMeta = (value) => {
+
+    if (!value) return '';
+
+    const trimmed = value.trim();
+
+    if (!trimmed || trimmed.startsWith('{{')) return '';
+
+    const textarea = document.createElement('textarea');
+
+    textarea.innerHTML = trimmed;
+
+    return textarea.value.trim();
+
+  };
+
+
+
+  const metaRepoUrl = 'https://github.com/x0czz/EDUMER-DSE';
+
+  const metaRepoUrlNormalized = metaRepoUrl ? metaRepoUrl.replace(/\/+$/g, '') : '';
+
+
+
+  const computeArchiveUrl = (hrefHint) => {
+
+    const baseHref = (hrefHint || metaRepoUrlNormalized || metaRepoUrl || '').trim();
+
+    if (!baseHref) return '';
+
+
+
+    try {
+
+      const url = new URL(baseHref, window.location.href);
+
+      const pathnameRaw = url.pathname.replace(/\/+$/g, '');
+
+      const normalizeBranch = (value) => {
+
+        const branch = (value || '').trim();
+
+        return branch ? branch : 'main';
+
+      };
+
+
+
+      if (url.hostname.includes('github.')) {
+
+        const match = pathnameRaw.match(/^\/([^/]+)\/([^/]+)(?:\/(tree|blob)\/([^/]+).*)?$/);
+
+        if (!match) return '';
+
+
+
+        const owner = match[1];
+
+        const repo = match[2].replace(/\.git$/i, '');
+
+        const branchFromPath = match[4];
+
+        const branch = normalizeBranch(branchFromPath || url.searchParams.get('branch'));
+
+
+
+        return `${url.origin}/${owner}/${repo}/archive/refs/heads/${branch}.zip`;
+
+      }
+
+
+
+      if (url.hostname.includes('gitlab.')) {
+
+        const match = pathnameRaw.match(/^\/(.+?)(?:\/-\/tree\/([^/]+).*)?$/);
+
+        if (!match) return '';
+
+
+
+        const projectPath = match[1].replace(/\/+$/g, '');
+
+        const repoName = projectPath.split('/').pop();
+
+        const branchFromPath = match[2];
+
+        const branch = normalizeBranch(branchFromPath || url.searchParams.get('ref')); // GitLab often uses ref param
+
+
+
+        return `${url.origin}/${projectPath}/-/archive/${branch}/${repoName}-${branch}.zip`;
+
+      }
+
+
+
+      if (url.hostname.includes('bitbucket.')) {
+
+        const match = pathnameRaw.match(/^\/([^/]+)\/([^/]+)(?:\/src\/([^/]+).*)?$/);
+
+        if (!match) return '';
+
+
+
+        const owner = match[1];
+
+        const repo = match[2].replace(/\.git$/i, '');
+
+        const branchFromPath = match[3];
+
+        const branch = normalizeBranch(branchFromPath || url.searchParams.get('at'));
+
+
+
+        return `${url.origin}/${owner}/${repo}/get/${branch}.zip`;
+
+      }
+
+
+
+      const branch = normalizeBranch(url.searchParams.get('branch'));
+
+      return `${baseHref.replace(/\/+$/g, '')}/archive/refs/heads/${branch}.zip`;
+
+    } catch (error) {
+
+      return '';
+
+    }
+
+  };
+
+
+
+  const ensureDownloadButton = (fromObserver = false) => {
+
+    const tools = document.querySelector('.sidebar-title .sidebar-tools-main');
+
+    if (!tools) {
+
+      if (!fromObserver) {
+
+        window.setTimeout(() => ensureDownloadButton(false), 100);
+
+      }
+
+      return;
+
+    }
+
+
+
+    let download = tools.querySelector('[data-template-download]');
+
+    if (!download) {
+
+      download = document.createElement('a');
+
+      download.className = 'quarto-navigation-tool px-1';
+
+      download.title = 'Descargar ZIP';
+
+      download.setAttribute('aria-label', 'Descargar plantilla (ZIP)');
+
+      download.setAttribute('data-template-download', 'true');
+
+      download.target = '_blank';
+
+      download.rel = 'noopener';
+
+      download.innerHTML = '<i class="bi bi-download"></i>';
+
+    }
+
+
+
+    const links = Array.from(tools.querySelectorAll('a.quarto-navigation-tool'));
+
+    let repoLink = null;
+
+
+
+    if (metaRepoUrlNormalized) {
+
+      repoLink = links.find((anchor) => {
+
+        if (anchor === download) return false;
+
+        const href = anchor.href ? anchor.href.replace(/\/+$/g, '') : '';
+
+        return href === metaRepoUrlNormalized;
+
+      });
+
+    }
+
+
+
+    if (!repoLink) {
+
+      repoLink = links.find((anchor) => anchor !== download && anchor.querySelector('.bi-github'));
+
+    }
+
+
+
+    if (!repoLink) {
+
+      repoLink = links.find((anchor) => {
+
+        if (anchor === download) return false;
+
+        const href = anchor.href || '';
+
+        return /github\.|gitlab\.|bitbucket\./i.test(href);
+
+      });
+
+    }
+
+
+
+    const archiveUrl = computeArchiveUrl(repoLink ? repoLink.href : undefined);
+
+
+
+    if (!archiveUrl) {
+
+      if (download.parentNode) {
+
+        download.parentNode.removeChild(download);
+
+      }
+
+      return;
+
+    }
+
+
+
+    download.href = archiveUrl;
+
+    download.title = 'Descargar plantilla (ZIP)';
+
+    download.setAttribute('aria-label', 'Descargar plantilla (ZIP)');
+
+    const codeToggle = links.find((anchor) => anchor.classList.contains('global-code-toggle'));
+
+
+
+    if (repoLink) {
+
+      repoLink.insertAdjacentElement('afterend', download);
+
+    } else if (codeToggle) {
+
+      codeToggle.insertAdjacentElement('beforebegin', download);
+
+    } else {
+
+      tools.insertBefore(download, tools.firstChild);
+
+    }
+
+  };
+
+
+
+  ensureDownloadButton();
+
+
+
+  const observer = new MutationObserver((mutations) => {
+
+    const shouldUpdate = mutations.some((mutation) => {
+
+      if (mutation.type !== 'childList') {
+
+        return false;
+
+      }
+
+      return Array.from(mutation.addedNodes).some((node) => {
+
+        if (!(node instanceof HTMLElement)) {
+
+          return false;
+
+        }
+
+        return (
+
+          node.classList.contains('global-code-toggle') ||
+
+          (node.querySelector && node.querySelector('.global-code-toggle'))
+
+        );
+
+      });
+
+    });
+
+
+
+    if (shouldUpdate) {
+
+      ensureDownloadButton(true);
+
+    }
+
+  });
+
+
+
+  observer.observe(document.body, { childList: true, subtree: true });
+
+});
+
+</script>
+
+<script>
+
+(function () {
+
+  var isReferences = /(?:^|\/)references\.html(?:#|$)/i.test(window.location.pathname);
+
+
+
+  // Base relativa que Quarto publica (para apéndices/…)
+
+  var offsetMeta = document.querySelector('meta[name="quarto:offset"]');
+
+  var base = (offsetMeta && offsetMeta.content) ? offsetMeta.content : "";
+
+
+
+  // 1) En capítulos: reescribe enlaces de cita -> references.html#ref-*
+
+  if (!isReferences) {
+
+    var cites = document.querySelectorAll('a[role="doc-biblioref"][href^="#ref-"]');
+
+    cites.forEach(function (a) {
+
+      var hash = a.getAttribute('href'); // "#ref-xxx"
+
+      // Conserva tooltips. Añade marca para mostrar "volver" luego.
+
+      a.setAttribute('href', base + 'references.html' + hash);
+
+      a.setAttribute('data-citefix', 'from-chapter');
+
+    });
+
+
+
+    // Oculta bibliografía local si citeproc la insertó
+
+    var localRefsBlocks = document.querySelectorAll('section.footnotes, div#refs, div.references, section#references');
+
+    localRefsBlocks.forEach(function (el) { el.style.display = 'none'; });
+
+  }
+
+
+
+  // 2) En references.html: añade botón "Volver" si se llega desde otra página
+
+  if (isReferences) {
+
+    var cameFromOutside = document.referrer && !/\/references\.html(?:#|$)/i.test(new URL(document.referrer).pathname);
+
+    if (cameFromOutside && window.history && window.history.length > 1) {
+
+      var btn = document.createElement('button');
+
+      btn.type = 'button';
+
+      btn.textContent = '← Volver';
+
+      btn.setAttribute('aria-label', 'Volver a la página anterior');
+
+      btn.style.position = 'fixed';
+
+      btn.style.right = '1rem';
+
+      btn.style.bottom = '1rem';
+
+      btn.style.zIndex = '9999';
+
+      btn.style.padding = '.6rem .9rem';
+
+      btn.style.borderRadius = '10px';
+
+      btn.style.border = '1px solid rgba(0,0,0,.15)';
+
+      btn.style.background = 'var(--bs-body-bg, #fff)';
+
+      btn.style.color = 'var(--bs-body-color, #111)';
+
+      btn.style.boxShadow = '0 6px 16px rgba(0,0,0,.12)';
+
+      btn.onclick = function () { history.back(); };
+
+      document.body.appendChild(btn);
+
+    }
+
+
+
+    // Si llegamos con hash (#ref-xxx), desplaza con un pequeño retardo
+
+    // para asegurar que el layout esté listo.
+
+    if (location.hash && /^#ref-/.test(location.hash)) {
+
+      setTimeout(function () {
+
+        try {
+
+          var target = document.getElementById(location.hash.substring(1));
+
+          if (target) target.scrollIntoView({behavior: 'smooth', block: 'start'});
+
+        } catch (e) {}
+
+      }, 50);
+
+    }
+
+  }
+
+})();
+
+</script>
+
+
+
+<style>
+
+/* Evita que el ancla de referencias quede “tapada” por el encabezado */
+
+.csl-entry[id^="ref-"],
+
+[id^="ref-"] { scroll-margin-top: 90px; }
+
+
+
+/* Ajuste suave para tooltips / focos de enlaces */
+
+a[role="doc-biblioref"]:focus-visible {
+
+  outline: 2px dashed var(--facso-2, #84A7D8);
+
+  outline-offset: 2px;
+
+}
+
+
+
+/* Opcional: separadores más legibles en la lista de referencias */
+
+#refs .csl-entry { padding: .25rem 0; border-bottom: 1px dashed rgba(0,0,0,.06); }
+
+#refs .csl-entry:last-child { border-bottom: none; }
+
+</style>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const toc = document.querySelector("nav#TOC, nav.toc-active");
+
+  if (!toc) {
+
+    return;
+
+  }
+
+
+
+  const tocLinks = toc.querySelectorAll("a.nav-link[data-scroll-target]");
+
+  if (!tocLinks.length) {
+
+    return;
+
+  }
+
+
+
+  const sections = Array.from(tocLinks)
+
+    .map((link) => {
+
+      const target = document.querySelector(link.getAttribute("data-scroll-target"));
+
+      return target ? { link, target, top: 0 } : null;
+
+    })
+
+    .filter(Boolean);
+
+
+
+  const updateOffsets = () => {
+
+    sections.forEach((section) => {
+
+      section.top = section.target.getBoundingClientRect().top + window.scrollY;
+
+    });
+
+  };
+
+
+
+  const activateLink = (targetLink) => {
+
+    tocLinks.forEach((link) => link.classList.remove("active"));
+
+    if (targetLink) {
+
+      targetLink.classList.add("active");
+
+    }
+
+  };
+
+
+
+  const OFFSET = 140;
+
+  let ticking = false;
+
+
+
+  const updateActiveSection = () => {
+
+    const scrollPosition = window.scrollY + OFFSET;
+
+    let current = sections[0];
+
+
+
+    for (const section of sections) {
+
+      if (section.top <= scrollPosition) {
+
+        current = section;
+
+      } else {
+
+        break;
+
+      }
+
+    }
+
+
+
+    activateLink(current ? current.link : null);
+
+    ticking = false;
+
+  };
+
+
+
+  const onScroll = () => {
+
+    if (!ticking) {
+
+      window.requestAnimationFrame(updateActiveSection);
+
+      ticking = true;
+
+    }
+
+  };
+
+
+
+  updateOffsets();
+
+  updateActiveSection();
+
+
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  window.addEventListener("resize", () => {
+
+    updateOffsets();
+
+    updateActiveSection();
+
+  });
+
+
+
+  window.addEventListener("hashchange", () => {
+
+    const hash = window.location.hash;
+
+    const match = sections.find((section) => section.link.getAttribute("data-scroll-target") === hash);
+
+    if (match) {
+
+      activateLink(match.link);
+
+    }
+
+  });
+
+});
+
+</script>
+
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copiado");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copiado");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<script src="metodologico_files/libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

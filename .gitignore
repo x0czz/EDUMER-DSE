@@ -29,3 +29,5 @@ docs/
 renv/library/
 /.quarto/
 **/*.quarto_ipynb
+# Presentación renderizada (se genera en GitHub Actions; pesa ~20 MB)
+presentacion.html
