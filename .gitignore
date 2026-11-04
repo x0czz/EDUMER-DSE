@@ -3,7 +3,6 @@ _report/
 _book/
 _site/
 .DS_Store
-docs/
 # _freeze/ se versiona: GitHub Actions publica con los resultados ya calculados localmente
 *.Rmd
 *.utf8.md
@@ -22,6 +21,9 @@ docs/
 *.fls
 !index_files/
 !index_files/**
+# Sitio publicado en GitHub Pages (main /docs)
+!docs/
+!docs/**
 .Rproj.user
 .Rhistory
 .RData
@@ -29,5 +31,3 @@ docs/
 renv/library/
 /.quarto/
 **/*.quarto_ipynb
-# Presentación renderizada (se genera en GitHub Actions; pesa ~20 MB)
-presentacion.html
