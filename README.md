@@ -7,3 +7,4 @@ Documentos publicados en GitHub Pages:
 - [Reporte del experimento](https://x0czz.github.io/EDUMER-DSE/)
 - [Documento metodológico](https://x0czz.github.io/EDUMER-DSE/metodologico.html)
 - [Presentación: Esfuerzo, oportunidad y reparto de décimas](https://x0czz.github.io/EDUMER-DSE/presentacion.html)
+- [Póster: ¿Las mismas oportunidades para todos?](https://x0czz.github.io/EDUMER-DSE/poster/poster.html) ([PDF](https://x0czz.github.io/EDUMER-DSE/poster/poster.pdf))

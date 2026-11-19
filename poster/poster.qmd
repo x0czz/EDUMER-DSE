@@ -1,0 +1,304 @@
+---
+pagetitle: "¿Las mismas oportunidades para todos? Póster"
+lang: es
+format:
+  html:
+    minimal: true
+    embed-resources: true
+    css: poster.css
+    toc: false
+    section-divs: false
+execute:
+  echo: false
+  warning: false
+  message: false
+bibliography: poster.bib
+csl: "../refs/apa.csl"
+suppress-bibliography: false
+link-citations: false
+---
+
+```{r}
+#| label: setup
+library(ordinal)
+library(dplyr)
+library(ggplot2)
+
+load("../input/datos_igualdad_oportunidades.RData")
+d <- datos_io
+
+# Formato con coma decimal
+f2 <- function(x) formatC(x, format = "f", digits = 2, decimal.mark = ",")
+f0 <- function(x) formatC(x, format = "f", digits = 0, decimal.mark = ",")
+mil <- function(x) formatC(x, format = "d", big.mark = ".", decimal.mark = ",")
+
+# ---- Descriptivos de la variable dependiente (p1_9) ----
+acuerdo <- d |>
+  filter(!is.na(p1_9_ord)) |>
+  group_by(ola) |>
+  summarise(pct = 100 * mean(p1_9_ord %in% c("De acuerdo", "Muy de acuerdo")),
+            n = n(), .groups = "drop")
+n_ola1 <- sum(d$ola == 1); n_ola2 <- sum(d$ola == 2)
+
+# ---- Modelo principal: logit ordinal multinivel (observaciones en estudiantes) ----
+# Muestra analítica: casos completos en todas las variables del modelo.
+# El centrado se calcula DENTRO de la muestra analítica:
+#   x_gmc = x - media general        x_cwc = x - media del estudiante
+#   x_m   = media del estudiante - media general
+# Modelo contextual (x_gmc + x_m): x_gmc = within; x_m = contextual (between − within)
+# Modelo within-between (x_cwc + x_m): x_m = between puro
+xs <- c("merit_esc", "notas", "univ", "merit_soc", "privilegio", "pref_merit", "pref_nomerit")
+ctrl <- c("ola2", "mujer_otro", "extranjero", "cohorte_media")
+dm <- na.omit(d[, c("p1_9_ord", xs, ctrl, "id_estudiante")])
+for (x in xs) {
+  v <- as.numeric(dm[[x]]); m <- ave(v, dm$id_estudiante)
+  dm[[paste0(x, "_gmc")]] <- v - mean(v)
+  dm[[paste0(x, "_cwc")]] <- v - m
+  dm[[paste0(x, "_m")]]   <- m - mean(m)
+}
+dm$id_estudiante <- factor(dm$id_estudiante)
+n_dos_olas <- sum(table(dm$id_estudiante) == 2)
+
+rhs  <- c(paste0(xs, "_gmc"), paste0(xs, "_m"), ctrl)
+form <- as.formula(paste("p1_9_ord ~", paste(rhs, collapse = " + ")))
+mod  <- clmm(update(form, . ~ . + (1 | id_estudiante)), data = dm,
+             link = "logit", nAGQ = 5)
+mod_wb <- clmm(as.formula(paste("p1_9_ord ~",
+                                paste(c(paste0(xs, "_cwc"), paste0(xs, "_m"), ctrl), collapse = " + "),
+                                "+ (1 | id_estudiante)")),
+               data = dm, link = "logit", nAGQ = 5)
+
+tab <- function(m) {
+  s <- coef(summary(m)); s <- s[!grepl("|", rownames(s), fixed = TRUE), ]
+  data.frame(term = rownames(s), b = s[, 1], se = s[, 2], p = s[, 4]) |>
+    mutate(or = exp(b), lo = exp(b - 1.96 * se), hi = exp(b + 1.96 * se))
+}
+res <- bind_rows(
+  tab(mod),
+  tab(mod_wb) |> filter(grepl("_m$", term)) |> mutate(term = sub("_m$", "_between", term))
+)
+
+# R2 de Nakagawa para modelos ordinales (varianza residual latente pi^2/3)
+X  <- model.matrix(update(form, NULL ~ .), dm)[, -1]
+vf <- var(as.vector(X %*% coef(mod)[colnames(X)]))
+vu <- as.numeric(VarCorr(mod)[[1]]); vr <- pi^2 / 3
+r2m <- vf / (vf + vu + vr); r2c <- (vf + vu) / (vf + vu + vr)
+
+# ---- Hipótesis: un efecto within y uno contextual por predictor ----
+hip0 <- tibble::tribble(
+  ~cod,  ~var,           ~nombre,                          ~esperado,
+  "H1",  "merit_esc",    "Meritocracia escolar percibida", "+",
+  "H2",  "notas",        "Promedio de notas",              "+",
+  "H3",  "univ",         "Expectativa universitaria",      "+",
+  "H4",  "ola2",         "Segunda ola (trayectoria)",      "±",
+  "H5a", "merit_soc",    "Percepción de meritocracia",     "+",
+  "H5b", "privilegio",   "Percepción de privilegio",       "−",
+  "H5c", "pref_merit",   "Preferencia meritocrática",      "−",
+  "H5d", "pref_nomerit", "Aceptación del privilegio",      "+"
+)
+tipos <- c("Within\n(cambio propio)", "Between\n(entre estudiantes)",
+           "Contextual\n(between − within)")
+hip <- bind_rows(
+  hip0 |> mutate(tipo = tipos[1], term = ifelse(var == "ola2", "ola2", paste0(var, "_gmc"))),
+  hip0 |> filter(var != "ola2") |> mutate(tipo = tipos[2], term = paste0(var, "_between")),
+  hip0 |> filter(var != "ola2") |> mutate(tipo = tipos[3], term = paste0(var, "_m"))
+) |>
+  left_join(res, by = "term") |>
+  mutate(
+    veredicto = case_when(
+      p >= .05 ~ "No significativo",
+      esperado == "±" ~ "Dirección esperada",
+      (esperado == "+" & or > 1) | (esperado == "−" & or < 1) ~ "Dirección esperada",
+      TRUE ~ "Contraria"
+    ),
+    estrellas = case_when(p < .001 ~ "***", p < .01 ~ "**", p < .05 ~ "*", TRUE ~ ""),
+    etiqueta = paste0(cod, "  ", nombre, " (", esperado, ")")
+  )
+
+w   <- function(cod_) f2(hip$or[hip$cod == cod_ & hip$tipo == tipos[1]])
+btw <- function(cod_) f2(hip$or[hip$cod == cod_ & hip$tipo == tipos[2]])
+ctx <- function(cod_) f2(hip$or[hip$cod == cod_ & hip$tipo == tipos[3]])
+or_c <- function(term_) f2(res$or[res$term == term_])
+```
+
+::: {.poster-header}
+<div class="header-texto">
+<p class="titulo">¿Las mismas oportunidades para todos?</p>
+<p class="subtitulo">Experiencia escolar, creencias meritocráticas y percepción de igualdad de oportunidades en estudiantes chilenos</p>
+<p class="autor"><strong>Nicolás Outerbridge</strong> · Sociología, Facultad de Ciencias Sociales, Universidad de Chile</p>
+</div>
+<img class="logo" src="../assets/edumer.png" alt="Logo del proyecto EDUMER, Educación y Meritocracia">
+:::
+
+::: {.poster-body}
+
+::: {.col-izq}
+
+::: {.bloque}
+<h2 class="seccion">El problema</h2>
+
+La escuela promete que todos pueden llegar tan lejos como su esfuerzo y su talento les permitan. Esa promesa descansa en un supuesto anterior al mérito: que todos parten con las mismas oportunidades.
+
+La investigación con escolares ha estudiado sobre todo las creencias meritocráticas [@laffert_changes]. La percepción de igualdad de oportunidades rara vez se ha estudiado como objeto propio y con frecuencia se ha confundido con ellas.
+:::
+
+::: {.bloque}
+<h2 class="seccion">Pregunta</h2>
+
+::: {.pregunta}
+¿En qué medida la percepción de igualdad de oportunidades de los estudiantes se asocia con su experiencia de meritocracia en la escuela, sus creencias sobre el mérito y el privilegio, su posición escolar y su trayectoria?
+:::
+:::
+
+::: {.bloque}
+<h2 class="seccion">Hipótesis</h2>
+
+::: {.hip}
+- [H1]{.cod} [Meritocracia escolar percibida [+]{.sig} [· transferencia de la escuela a la sociedad [@batruch_belief_2023]]{.mec}]{.txt}
+- [H2]{.cod} [Mejores notas [+]{.sig} [· interés propio de los "ganadores" [@baer_education_1982]]{.mec}]{.txt}
+- [H3]{.cod} [Expectativa universitaria [+]{.sig} [· posición anticipada de ganador [@villalobos_percepciones_2022]]{.mec}]{.txt}
+- [H4]{.cod} [Avance entre olas [±]{.sig} [· internalización (+) o ilustración (−) [@baer_education_1982]]{.mec}]{.txt}
+- [H5a]{.cod} [Percepción de meritocracia [+]{.sig} [· legitimación [@castillo_meritocracia_2019]]{.mec}]{.txt}
+- [H5b]{.cod} [Percepción de privilegio [−]{.sig} [· reconocimiento del origen [@laffert_changes]]{.mec}]{.txt}
+- [H5c]{.cod} [Preferencia meritocrática [−]{.sig} [· estándar normativo más exigente [@castillo_meritocracia_2019]]{.mec}]{.txt}
+- [H5d]{.cod} [Aceptación del privilegio [+]{.sig} [· exploratoria [@laffert_changes]]{.mec}]{.txt}
+:::
+:::
+
+::: {.bloque}
+<h2 class="seccion">Datos y método</h2>
+
+<ul class="datos">
+<li>Panel <strong>EDUMER</strong>, dos olas (2023–2024), nueve escuelas de las regiones Metropolitana y de Valparaíso.</li>
+<li>Dos cohortes (6.º básico y 1.º medio en la ola 1): `r mil(n_ola1)` estudiantes en la ola 1 y `r mil(n_ola2)` en la ola 2.</li>
+<li>Modelo: <strong>logit ordinal multinivel</strong>, observaciones (nivel 1) en estudiantes (nivel 2), con intercepto aleatorio por estudiante.</li>
+<li>Cada predictor se separa en efectos <strong>within</strong>, <strong>between</strong> y <strong>contextual</strong> (between − within).</li>
+<li>Controles: género, país de nacimiento y cohorte.</li>
+<li>N = `r mil(nrow(dm))` observaciones de `r mil(nlevels(dm$id_estudiante))` estudiantes (`r mil(n_dos_olas)` con ambas olas). R² marginal = `r f2(r2m)`; condicional = `r f2(r2c)`.</li>
+</ul>
+:::
+
+:::
+
+::: {.col-der}
+
+<h2 class="seccion">Variable dependiente</h2>
+
+::: {.item}
+"En Chile, todas las personas tienen las mismas oportunidades para salir adelante" (de muy en desacuerdo a muy de acuerdo)
+:::
+
+::: {.cifras}
+::: {.cifra .acento}
+<div class="num">`r f0(acuerdo$pct[acuerdo$ola == 1])`%</div>
+<div class="txt">está de acuerdo en la ola 1 (2023)</div>
+:::
+::: {.cifra}
+<div class="num">`r f0(acuerdo$pct[acuerdo$ola == 2])`%</div>
+<div class="txt">está de acuerdo en la ola 2 (2024)</div>
+:::
+:::
+
+<h2 class="seccion">Resultados de las hipótesis</h2>
+
+```{r}
+#| label: forest
+#| fig-width: 10.6
+#| fig-height: 9.8
+#| dpi: 300
+#| out-width: "100%"
+cols  <- c("Dirección esperada" = "#99000D", "Contraria" = "#4A4A4A", "No significativo" = "#8C8C8C")
+shps  <- c("Dirección esperada" = 16, "Contraria" = 17, "No significativo" = 21)
+
+pd <- hip |>
+  mutate(etiqueta = factor(etiqueta, levels = rev(unique(hip$etiqueta))),
+         tipo = factor(tipo, levels = tipos),
+         veredicto = factor(veredicto, levels = names(cols)),
+         texto = paste0(f2(or), estrellas))
+
+ggplot(pd, aes(x = or, y = etiqueta, colour = veredicto, shape = veredicto)) +
+  annotate("rect", xmin = 0.25, xmax = 1, ymin = -Inf, ymax = Inf, fill = "#F1EFEC") +
+  geom_vline(xintercept = 1, colour = "#4A4A4A", linewidth = 0.5) +
+  geom_errorbarh(aes(xmin = lo, xmax = hi), height = 0, linewidth = 1.1) +
+  geom_point(size = 4.2, stroke = 1.3, fill = "white") +
+  geom_text(aes(label = texto), vjust = -1.05, size = 4.6,
+            colour = "#1E1E1E", show.legend = FALSE) +
+  geom_text(data = data.frame(tipo = factor(tipos[2:3], levels = tipos),
+                              etiqueta = factor(levels(pd$etiqueta)[5], levels = levels(pd$etiqueta))),
+            aes(x = 1, y = etiqueta, label = "solo within"), inherit.aes = FALSE,
+            size = 4.4, colour = "#8C8C8C", fontface = "italic") +
+  facet_wrap(~ tipo, ncol = 3) +
+  scale_x_log10(limits = c(0.2, 5), breaks = c(0.25, 0.5, 1, 2, 4),
+                labels = function(x) formatC(x, format = "fg", decimal.mark = ",")) +
+  scale_colour_manual(values = cols, drop = FALSE, name = NULL) +
+  scale_shape_manual(values = shps, drop = FALSE, name = NULL) +
+  labs(x = "Razón de odds (escala logarítmica) con IC 95%", y = NULL) +
+  theme_minimal(base_size = 15) +
+  theme(legend.position = "top", legend.justification = "left",
+        legend.text = element_text(size = 15.5),
+        strip.text = element_text(size = 14.5, face = "bold", colour = "#1E1E1E", hjust = 0),
+        panel.spacing.x = unit(10, "mm"),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.major.x = element_line(colour = "#E2DFDA", linewidth = 0.4),
+        axis.text.y = element_text(size = 15.5, colour = "#1E1E1E", hjust = 0),
+        axis.text.x = element_text(size = 13.5, colour = "#555555"),
+        axis.title.x = element_text(size = 15, colour = "#555555", margin = margin(t = 8)),
+        plot.margin = margin(4, 8, 4, 4))
+```
+
+::: {.nota}
+Razones de odds de estar más de acuerdo con el ítem; valores menores a 1 (zona sombreada) indican menor percepción de igualdad de oportunidades. Entre paréntesis, el signo esperado. **Within**: asociación con el cambio del estudiante respecto de su propio promedio. **Between**: asociación entre los promedios de los estudiantes. **Contextual**: diferencia entre el between y el within. Notas por punto (escala 1–7); meritocracia escolar y creencias por punto (escala 1–4). \*p < 0,05; \*\*p < 0,01; \*\*\*p < 0,001.
+:::
+
+:::
+
+:::
+
+::: {.hallazgos-wrap}
+::: {.hallazgos}
+
+::: {.hallazgo}
+### La escuela se proyecta en la sociedad
+Cuando un estudiante percibe su escuela como más meritocrática que en la otra ola, también percibe más igualdad de oportunidades (<span class="or">within `r w("H1")`</span>), y lo mismo ocurre entre estudiantes (<span class="or">between `r btw("H1")`</span>). Sin efecto contextual (`r ctx("H1")`). **H1 se apoya.**
+:::
+
+::: {.hallazgo}
+### Mérito y privilegio operan distinto
+Percibir mérito opera dentro del estudiante y en su nivel promedio (<span class="or">within `r w("H5a")`; contextual `r ctx("H5a")`</span>). Aceptar el privilegio opera dentro del estudiante (<span class="or">within `r w("H5d")`</span>). Percibir privilegio solo distingue entre estudiantes (<span class="or">between `r btw("H5b")`</span>). La preferencia no se asocia.
+:::
+
+::: {.hallazgo .gris}
+### Los "ganadores" no ven más oportunidades
+Quienes esperan ir a la universidad (<span class="or">between `r btw("H3")`</span>) y quienes tienen mejores notas (<span class="or">between `r btw("H2")`</span>) perciben **menos** igualdad de oportunidades. Cambiar de notas o de expectativa no mueve la percepción (within `r w("H2")` y `r w("H3")`). **H2 y H3 no se apoyan.**
+:::
+
+::: {.hallazgo}
+### Con el avance escolar, más escepticismo
+La percepción baja entre la primera y la segunda ola (<span class="or">OR `r w("H4")`</span>), y los estudiantes de media perciben menos que los de básica (<span class="or">OR `r or_c("cohorte_media")`</span>). El patrón coincide con la **ilustración**.
+:::
+
+:::
+:::
+
+::: {.cierre}
+
+::: {.conclusion}
+<h2 class="seccion">Conclusión</h2>
+
+La percepción de igualdad de oportunidades cambia junto con la experiencia de mérito en la escuela y con las creencias que legitiman las diferencias; la percepción de privilegio distingue a unos estudiantes de otros, pero no acompaña sus cambios. Esperar ir a la universidad se asocia con ver menos oportunidades, en línea con estudiantes de élite que explican la desigualdad por factores estructurales [@villalobos_percepciones_2022]. Con el avance escolar, crece el escepticismo.
+:::
+
+::: {.refs}
+<h2 class="seccion">Referencias</h2>
+
+::: {#refs}
+:::
+:::
+
+:::
+
+::: {.pie}
+<span>Datos: Proyecto Educación y Meritocracia (EDUMER), panel de estudiantes 2023–2024.</span>
+<span>Resultados preliminares de tesis · x0czz.github.io/tesis</span>
+:::

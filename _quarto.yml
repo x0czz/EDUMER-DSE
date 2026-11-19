@@ -7,6 +7,8 @@ project:
     - presentacion.qmd
   resources:
     - assets/favicon-2025-20251031.svg
+    - poster/poster.html
+    - poster/poster.pdf
 
 csl: refs/apa.csl
 bibliography: refs/referencias.bib
