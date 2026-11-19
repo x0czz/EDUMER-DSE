@@ -2,13 +2,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="es" xml:lang="es"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.6.42">
+<meta name="generator" content="quarto-1.9.35">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
 <title>Documento metodológico: modelos multinivel del DSE de EDUMER</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -24,33 +27,45 @@ ul.task-list li input[type="checkbox"] {
 
 
 <script src="metodologico_files/libs/clipboard/clipboard.min.js"></script>
-<script src="metodologico_files/libs/quarto-html/quarto.js"></script>
+<script src="metodologico_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="metodologico_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="metodologico_files/libs/quarto-html/popper.min.js"></script>
 <script src="metodologico_files/libs/quarto-html/tippy.umd.min.js"></script>
 <script src="metodologico_files/libs/quarto-html/anchor.min.js"></script>
 <link href="metodologico_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="metodologico_files/libs/quarto-html/quarto-syntax-highlighting-2f5df379a58b258e96c21c0638c20c03.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="metodologico_files/libs/quarto-html/quarto-syntax-highlighting-46f66b053e56abd73bb6e954d61a315b.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="metodologico_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="metodologico_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="metodologico_files/libs/bootstrap/bootstrap-d765b318748635bc0727869d1ffb48bc.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="metodologico_files/libs/bootstrap/bootstrap-50c032be40e761663ca4276471ac9b4e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <style>html{ scroll-behavior: smooth; }</style>
 <style>
+
 #quarto-document-content p,
+
 .page-columns .content p,
+
 .page-columns p,
+
 .quarto-article p,
+
 main.content p,
+
 p {
+
   text-align: justify !important;
+
   text-justify: inter-word;
+
 }
+
 </style>
+
 
 
 <link rel="stylesheet" href="assets/styles.css">
 </head>
 
-<body class="fullcontent">
+<body class="fullcontent quarto-light">
 
 <div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
 
@@ -98,8 +113,6 @@ main section.level1 { margin-top: 2.2rem; }
 caption { color: #475569 !important; font-style: italic; }
 .callout { border-left-color: #002f6c !important; }
 main table td:not(:first-child), main table th:not(:first-child) { white-space: nowrap; }
-#tbl-top3 td:nth-child(2), #tbl-top3 td:last-child { white-space: normal; }
-#tbl-top3 td:last-child { min-width: 16rem; font-size: 0.85em; }
 pre.salida { font-size: 0.78em; line-height: 1.25; background: #f8fafc; border: 1px solid #e5e7eb; padding: 0.6rem; }
 </style>
 <section id="propósito" class="level1" data-number="1">
@@ -185,7 +198,7 @@ Tabla&nbsp;2: Promedios por estudiante de los predictores de nivel 1
 </figcaption>
 <div aria-describedby="tbl-cluster-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
-<table class="do-not-create-environment cell caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<table class="cell caption-top table table-sm table-striped small">
 <thead>
 <tr class="header">
 <th style="text-align: left;" data-quarto-table-cell-role="th">Predictor</th>
@@ -209,8 +222,6 @@ Tabla&nbsp;2: Promedios por estudiante de los predictores de nivel 1
 </tr>
 </tbody>
 </table>
-
-
 </div>
 </div>
 </figure>
@@ -284,157 +295,21 @@ Tabla&nbsp;3: Secuencia de modelos
 </figure>
 </div>
 </section>
-<section id="por-qué-pendientes-aleatorias" class="level2" data-number="4.2">
-<h2 data-number="4.2" class="anchored" data-anchor-id="por-qué-pendientes-aleatorias"><span class="header-section-number">4.2</span> Por qué pendientes aleatorias</h2>
-<p>Una interacción entre niveles explica por qué el efecto de un atributo varía entre estudiantes. Si el modelo no permite esa variación (sin pendientes aleatorias), supone que todos los estudiantes ponderan igual el esfuerzo. Los errores estándar de las interacciones se subestiman y aumentan los falsos positivos (Heisig y Schaeffer, 2019). Las pendientes se estiman sin correlación entre sí (<code>||</code>), porque con cuatro decisiones por estudiante hay poca información para estimar covarianzas.</p>
 </section>
-<section id="la-interacción-esfuerzo-oportunidad" class="level2" data-number="4.3">
-<h2 data-number="4.3" class="anchored" data-anchor-id="la-interacción-esfuerzo-oportunidad"><span class="header-section-number">4.3</span> La interacción esfuerzo × oportunidad</h2>
-<p>Se omite de la secuencia principal para mantener los modelos centrados en los efectos principales del diseño. Incluirla no cambia los demás coeficientes, porque el diseño es ortogonal.</p>
-</section>
-</section>
-<section id="selección-de-moderadores" class="level1" data-number="5">
-<h1 data-number="5"><span class="header-section-number">5</span> Selección de moderadores</h1>
-<p>Los moderadores se eligieron mediante un tamizaje exploratorio: se estimaron 62 modelos, uno por cada combinación de 31 posibles moderadores de la ola 2 (actitudes, percepciones, notas, aspiraciones, educación de los padres, curso y género) con cada atributo. Cada modelo agrega una sola interacción a M2. En este tamizaje no se incluye el efecto principal del moderador, porque vale 0 por la suma fija: incluirlo solo agrega un parámetro sin capacidad explicativa y penaliza el AIC y el BIC. De las 14 interacciones significativas al 5 %, se seleccionaron ocho que tienen una lectura teórica clara sobre meritocracia y justicia distributiva: cinco moderan el peso del esfuerzo y tres el de la oportunidad. Se descartaron las que no tienen una interpretación sustantiva evidente (por ejemplo, la evaluación de la propia nota) o que, al restringir la muestra a quienes responden los ocho moderadores, dejan de ser significativas (la percepción de igualdad de oportunidades):</p>
-<div class="cell">
-<div id="tbl-top3" class="cell quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-tbl figure">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-top3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Tabla&nbsp;4: Las ocho interacciones seleccionadas
-</figcaption>
-<div aria-describedby="tbl-top3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output-display">
-<table class="do-not-create-environment cell caption-top table table-sm table-striped small" data-quarto-postprocess="true">
-<thead>
-<tr class="header">
-<th style="text-align: left;" data-quarto-table-cell-role="th">Atributo</th>
-<th style="text-align: left;" data-quarto-table-cell-role="th">Moderador</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th"><em>b</em></th>
-<th style="text-align: right;" data-quarto-table-cell-role="th"><em>p</em></th>
-<th style="text-align: right;" data-quarto-table-cell-role="th"><em>p</em> Holm</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">ΔAIC</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">ΔBIC</th>
-<th style="text-align: left;" data-quarto-table-cell-role="th">Lectura teórica</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">Esfuerzo</td>
-<td style="text-align: left;">Quienes más se esfuerzan deberían obtener más</td>
-<td style="text-align: right;">0,25</td>
-<td style="text-align: right;">&lt; ,001</td>
-<td style="text-align: right;">,003</td>
-<td style="text-align: right;">-13,5</td>
-<td style="text-align: right;">-7,6</td>
-<td style="text-align: left;">Quien prefiere premiar el esfuerzo lo premia más al repartir</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Esfuerzo</td>
-<td style="text-align: left;">Aspiración educativa (media / técnica / universidad)</td>
-<td style="text-align: right;">0,17</td>
-<td style="text-align: right;">,006</td>
-<td style="text-align: right;">,186</td>
-<td style="text-align: right;">-5,5</td>
-<td style="text-align: right;">0,4</td>
-<td style="text-align: left;">Quien aspira a la universidad valora más el esfuerzo como vía de logro</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Esfuerzo</td>
-<td style="text-align: left;">En Chile, a quienes tienen buenos contactos les va mejor</td>
-<td style="text-align: right;">0,17</td>
-<td style="text-align: right;">,006</td>
-<td style="text-align: right;">,186</td>
-<td style="text-align: right;">-5,4</td>
-<td style="text-align: right;">0,4</td>
-<td style="text-align: left;">Quien ve que los contactos pesan compensa premiando el esfuerzo</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Esfuerzo</td>
-<td style="text-align: left;">Las personas pueden esforzarse más si lo intentan</td>
-<td style="text-align: right;">0,16</td>
-<td style="text-align: right;">,013</td>
-<td style="text-align: right;">,370</td>
-<td style="text-align: right;">-4,1</td>
-<td style="text-align: right;">1,7</td>
-<td style="text-align: left;">Si el esfuerzo depende de la voluntad, es más legítimo premiarlo</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Esfuerzo</td>
-<td style="text-align: left;">Está bien que quienes pueden pagar más tengan mejor salud</td>
-<td style="text-align: right;">-0,14</td>
-<td style="text-align: right;">,024</td>
-<td style="text-align: right;">,617</td>
-<td style="text-align: right;">-3,1</td>
-<td style="text-align: right;">2,8</td>
-<td style="text-align: left;">Quien acepta que el dinero compre mejor salud (justicia de mercado) da menos peso al esfuerzo</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Oportunidad</td>
-<td style="text-align: left;">Está bien que a quienes tienen padres ricos les vaya bien</td>
-<td style="text-align: right;">0,12</td>
-<td style="text-align: right;">,020</td>
-<td style="text-align: right;">,608</td>
-<td style="text-align: right;">-3,5</td>
-<td style="text-align: right;">2,4</td>
-<td style="text-align: left;">Quien legitima el privilegio de origen compensa menos la casa pequeña</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Oportunidad</td>
-<td style="text-align: left;">En esta escuela, quienes se esfuerzan obtienen buenas notas</td>
-<td style="text-align: right;">0,11</td>
-<td style="text-align: right;">,022</td>
-<td style="text-align: right;">,675</td>
-<td style="text-align: right;">-3,2</td>
-<td style="text-align: right;">2,7</td>
-<td style="text-align: left;">Si la escuela premia el esfuerzo, la casa importa menos y se compensa menos</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Oportunidad</td>
-<td style="text-align: left;">Las personas pueden ser más inteligentes si lo intentan</td>
-<td style="text-align: right;">0,11</td>
-<td style="text-align: right;">,036</td>
-<td style="text-align: right;">1,000</td>
-<td style="text-align: right;">-2,4</td>
-<td style="text-align: right;">3,5</td>
-<td style="text-align: left;">Si la inteligencia es maleable, las condiciones de origen pesan menos</td>
-</tr>
-</tbody>
-</table>
-
-
-</div>
-</div>
-</figure>
-</div>
-</div>
-<div class="nota-apa">
-<p><em>Nota.</em> <em>b</em>: cambio en el efecto del atributo (en décimas) por cada <em>DE</em> del moderador. ΔAIC y ΔBIC respecto de M2 (negativo = mejor ajuste). <em>p</em> Holm: corregido por comparaciones múltiples dentro de cada atributo. Cada modelo se estimó con todos los estudiantes con respuesta en ese moderador.</p>
-</div>
-<div class="callout callout-style-simple callout-warning">
-<div class="callout-body d-flex">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-body-container">
-<p>Advertencia sobre la selección. Elegir las interacciones por su valor <em>p</em> en los mismos datos infla la probabilidad de falsos positivos: con 62 tests se esperan unos 3 significativos al 5 % solo por azar. Solo la preferencia por premiar el esfuerzo sobrevive la corrección de Holm y mejora el BIC. Las demás deben tratarse como exploratorias y requieren replicación (por ejemplo, en otra ola de EDUMER).</p>
-</div>
-</div>
-</div>
-</section>
-<section id="resultados-de-la-secuencia-de-modelos" class="level1" data-number="6">
-<h1 data-number="6"><span class="header-section-number">6</span> Resultados de la secuencia de modelos</h1>
+<section id="resultados-de-la-secuencia-de-modelos" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Resultados de la secuencia de modelos</h1>
 <p>Los modelos con moderadores incluyen el efecto principal de cada moderador de nivel 2, como corresponde al especificar una interacción. Esos coeficientes se estimaron, pero no se reportan en las tablas: por la suma fija valen exactamente 0 en todos los modelos (ver la sección sobre la estructura de los datos).</p>
-<section id="nivel-1-y-moderadores-del-esfuerzo" class="level2" data-number="6.1">
-<h2 data-number="6.1" class="anchored" data-anchor-id="nivel-1-y-moderadores-del-esfuerzo"><span class="header-section-number">6.1</span> Nivel 1 y moderadores del esfuerzo</h2>
+<section id="nivel-1-y-moderadores-del-esfuerzo" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="nivel-1-y-moderadores-del-esfuerzo"><span class="header-section-number">5.1</span> Nivel 1 y moderadores del esfuerzo</h2>
 <div class="cell">
 <div id="tbl-mod-esf" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-mod-esf-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Tabla&nbsp;5: Modelos M1 a M3: nivel 1 y moderadores del efecto del esfuerzo
+Tabla&nbsp;4: Modelos M1 a M3: nivel 1 y moderadores del efecto del esfuerzo
 </figcaption>
 <div aria-describedby="tbl-mod-esf-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
-<table class="do-not-create-environment cell caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<table class="cell caption-top table table-sm table-striped small">
 <thead>
 <tr class="header">
 <th style="text-align: left;" data-quarto-table-cell-role="th">Predictor</th>
@@ -640,8 +515,6 @@ Tabla&nbsp;5: Modelos M1 a M3: nivel 1 y moderadores del efecto del esfuerzo
 </tr>
 </tbody>
 </table>
-
-
 </div>
 </div>
 </figure>
@@ -651,17 +524,17 @@ Tabla&nbsp;5: Modelos M1 a M3: nivel 1 y moderadores del efecto del esfuerzo
 <p><em>Nota.</em> Coeficientes no estandarizados, en décimas. Esfuerzo y oportunidad codificados −0,5 / +0,5; moderadores estandarizados (media 0, <em>DE</em> 1). Los modelos M3 y M4 incluyen el efecto principal del moderador, que no se reporta porque vale 0 por construcción. Máxima verosimilitud. χ²: test de razón de verosimilitud de M2 frente a M1, y de cada modelo con moderadores frente a M2; entre paréntesis, los grados de libertad. * <em>p</em> &lt; ,05; ** <em>p</em> &lt; ,01; *** <em>p</em> &lt; ,001.</p>
 </div>
 </section>
-<section id="moderadores-de-la-oportunidad" class="level2" data-number="6.2">
-<h2 data-number="6.2" class="anchored" data-anchor-id="moderadores-de-la-oportunidad"><span class="header-section-number">6.2</span> Moderadores de la oportunidad</h2>
+<section id="moderadores-de-la-oportunidad" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="moderadores-de-la-oportunidad"><span class="header-section-number">5.2</span> Moderadores de la oportunidad</h2>
 <div class="cell">
 <div id="tbl-mod-opo" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-mod-opo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Tabla&nbsp;6: Modelos M4: moderadores del efecto de la oportunidad
+Tabla&nbsp;5: Modelos M4: moderadores del efecto de la oportunidad
 </figcaption>
 <div aria-describedby="tbl-mod-opo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
-<table class="do-not-create-environment cell caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<table class="cell caption-top table table-sm table-striped small">
 <thead>
 <tr class="header">
 <th style="text-align: left;" data-quarto-table-cell-role="th">Predictor</th>
@@ -793,8 +666,6 @@ Tabla&nbsp;6: Modelos M4: moderadores del efecto de la oportunidad
 </tr>
 </tbody>
 </table>
-
-
 </div>
 </div>
 </figure>
@@ -804,8 +675,8 @@ Tabla&nbsp;6: Modelos M4: moderadores del efecto de la oportunidad
 <p><em>Nota.</em> Coeficientes no estandarizados, en décimas. Esfuerzo y oportunidad codificados −0,5 / +0,5; moderadores estandarizados (media 0, <em>DE</em> 1). Los modelos M3 y M4 incluyen el efecto principal del moderador, que no se reporta porque vale 0 por construcción. Máxima verosimilitud. χ²: test de razón de verosimilitud de M2 frente a M1, y de cada modelo con moderadores frente a M2; entre paréntesis, los grados de libertad. * <em>p</em> &lt; ,05; ** <em>p</em> &lt; ,01; *** <em>p</em> &lt; ,001.</p>
 </div>
 </section>
-<section id="efectos-marginales" class="level2" data-number="6.3">
-<h2 data-number="6.3" class="anchored" data-anchor-id="efectos-marginales"><span class="header-section-number">6.3</span> Efectos marginales</h2>
+<section id="efectos-marginales" class="level2" data-number="5.3">
+<h2 data-number="5.3" class="anchored" data-anchor-id="efectos-marginales"><span class="header-section-number">5.3</span> Efectos marginales</h2>
 <p>Los gráficos muestran cómo cambia el efecto de cada atributo a lo largo de la escala original de cada moderador, con su intervalo de confianza al 95 %. En el esfuerzo, el eje vertical es cuántas décimas más recibe el perfil que se esfuerza; en la oportunidad, cuántas décimas recibe el perfil de casa grande respecto del de casa pequeña (valores negativos = compensación a la casa pequeña).</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -836,10 +707,10 @@ Figura&nbsp;2: Efecto marginal de la oportunidad según cada moderador (M4a–c;
 </div>
 </div>
 </section>
-<section id="lectura-de-los-resultados" class="level2" data-number="6.4">
-<h2 data-number="6.4" class="anchored" data-anchor-id="lectura-de-los-resultados"><span class="header-section-number">6.4</span> Lectura de los resultados</h2>
+<section id="lectura-de-los-resultados" class="level2" data-number="5.4">
+<h2 data-number="5.4" class="anchored" data-anchor-id="lectura-de-los-resultados"><span class="header-section-number">5.4</span> Lectura de los resultados</h2>
 <p>M1, efectos de nivel 1. El perfil que se esfuerza recibe 1,67 décimas más, y el de casa grande 0,71 décimas menos: los estudiantes premian el esfuerzo y compensan la desventaja. La varianza del intercepto es 0, como se anticipó.</p>
-<p>M2, pendientes aleatorias. Los efectos fijos no cambian, pero el ajuste mejora fuertemente (χ² en la <a href="#tbl-mod-esf" class="quarto-xref">Tabla&nbsp;5</a>). Hay mucha heterogeneidad: la desviación estándar de la pendiente del esfuerzo es 1,40 décimas, del mismo orden que el efecto promedio. Algunos estudiantes casi no distinguen por esfuerzo y otros dan 3 o más décimas de ventaja.</p>
+<p>M2, pendientes aleatorias. Los efectos fijos no cambian, pero el ajuste mejora fuertemente (χ² en la <a href="#tbl-mod-esf" class="quarto-xref">Tabla&nbsp;4</a>). Hay mucha heterogeneidad: la desviación estándar de la pendiente del esfuerzo es 1,40 décimas, del mismo orden que el efecto promedio. Algunos estudiantes casi no distinguen por esfuerzo y otros dan 3 o más décimas de ventaja.</p>
 <p>M3 y M4, moderadores uno por uno. Los efectos principales de los moderadores (no reportados) son exactamente 0, como exige la suma fija. Por eso los χ² de estos modelos tienen 2 grados de libertad, aunque solo uno (la interacción) aporta información, y el BIC no mejora. Lo informativo son las interacciones:</p>
 <ul>
 <li>Preferencia por premiar el esfuerzo × esfuerzo: 0,25 décimas por <em>DE</em> (<em>p</em> &lt; ,001).</li>
@@ -849,8 +720,8 @@ Figura&nbsp;2: Efecto marginal de la oportunidad según cada moderador (M4a–c;
 </ul>
 </section>
 </section>
-<section id="reporte-sustantivo" class="level1" data-number="7">
-<h1 data-number="7"><span class="header-section-number">7</span> Reporte sustantivo</h1>
+<section id="reporte-sustantivo" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Reporte sustantivo</h1>
 <p>Al repartir décimas entre compañeros con la misma nota, los estudiantes premian el esfuerzo y compensan la desventaja de origen: el compañero que se esfuerza recibe 1,67 décimas más, y el de casa grande 0,71 décimas menos. El esfuerzo pesa más del doble que la oportunidad.</p>
 <p>Ese criterio no es igual para todos. La mayor parte de la diferencia entre estudiantes no se explica por sus actitudes, pero algunas la ordenan de manera coherente:</p>
 <ul>
@@ -859,8 +730,8 @@ Figura&nbsp;2: Efecto marginal de la oportunidad según cada moderador (M4a–c;
 </ul>
 <p>En suma, los estudiantes combinan meritocracia y compensación: premian el esfuerzo y, a la vez, corrigen las desventajas de origen. Solo la preferencia por premiar el esfuerzo es un resultado robusto; las demás interacciones son exploratorias y requieren replicación.</p>
 </section>
-<section id="desigualdad-del-reparto-el-índice-de-gini" class="level1" data-number="8">
-<h1 data-number="8"><span class="header-section-number">8</span> Desigualdad del reparto: el índice de Gini</h1>
+<section id="desigualdad-del-reparto-el-índice-de-gini" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> Desigualdad del reparto: el índice de Gini</h1>
 <p>Para medir cuán desigual es cada reparto se usa el índice de Gini de las cuatro asignaciones, multiplicado por 100. Vale 10 en los repartos más parejos posibles con décimas enteras (3-3-2-2) y 75 si todo va a un solo compañero (10-0-0-0). Es el mismo indicador que usan Gilgen y Zangger (2025) a nivel del encuestado. El Gini mide cuánto se diferencia, no a quién se favorece: 4-1-3-2 y 4-2-1-3 tienen el mismo valor. En estos datos es prácticamente equivalente a la entropía, la desviación estándar o el rango (correlaciones de rango ≥ 0,98).</p>
 <p>El Gini medio es 24,3. El 37 % de los estudiantes reparte lo más parejo posible y el 3 % da todo a un compañero.</p>
 <div class="cell">
@@ -877,16 +748,16 @@ Figura&nbsp;3: Distribución del índice de Gini de los repartos
 </div>
 </div>
 </div>
-<p>Como la variable dependiente tiene un valor por estudiante, el modelo es una regresión lineal común (no multinivel), con efectos fijos por escuela, que absorben las diferencias entre establecimientos (con solo 9 escuelas, los errores agrupados por escuela serían poco confiables). Se usan errores estándar clásicos: con errores robustos (HC2) las conclusiones no cambian y el test de Breusch-Pagan no detecta heterocedasticidad. Los predictores se eligieron por su relevancia teórica, no por tamizaje: preferencias meritocráticas, igualitarismo, justicia de mercado, percepciones de la sociedad y la escuela, y características del estudiante. La educación de los padres se omite porque tiene un 25 % de datos perdidos.</p>
+<p>Como la variable dependiente tiene un valor por estudiante, el modelo es una regresión lineal común (no multinivel), con efectos fijos por escuela, que absorben las diferencias entre establecimientos (con solo 9 escuelas, los errores agrupados por escuela serían poco confiables). Se usan errores estándar clásicos: con errores robustos (HC2) las conclusiones no cambian y el test de Breusch-Pagan no detecta heterocedasticidad. Los predictores se eligieron por su relevancia teórica: preferencias meritocráticas, igualitarismo, justicia de mercado, percepciones de la sociedad y la escuela, y características del estudiante. La educación de los padres se omite porque tiene un 25 % de datos perdidos.</p>
 <div class="cell">
 <div id="tbl-gini" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-gini-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Tabla&nbsp;7: Regresiones del índice de Gini del reparto (×100)
+Tabla&nbsp;6: Regresiones del índice de Gini del reparto (×100)
 </figcaption>
 <div aria-describedby="tbl-gini-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
-<table class="do-not-create-environment cell caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<table class="cell caption-top table table-sm table-striped small">
 <colgroup>
 <col style="width: 33%">
 <col style="width: 33%">
@@ -990,8 +861,6 @@ Tabla&nbsp;7: Regresiones del índice de Gini del reparto (×100)
 </tr>
 </tbody>
 </table>
-
-
 </div>
 </div>
 </figure>
@@ -1012,574 +881,914 @@ Tabla&nbsp;7: Regresiones del índice de Gini del reparto (×100)
 </main>
 <!-- /main column -->
 <script>
+
 window.addEventListener('load', function () {
+
   const selectors = [
+
     '.quarto-sidebar .logo img',
+
     '.quarto-sidebar .quarto-logo img',
+
     '.sidebar-logo img',
+
     '.site-logo img',
+
     'a.quarto-site-logo img'
+
   ];
 
+
+
   let logoImg = null;
+
   for (const selector of selectors) {
+
     logoImg = document.querySelector(selector);
+
     if (logoImg) break;
+
   }
+
+
 
   if (logoImg) {
+
     const link = document.createElement('a');
+
     link.href = 'index.html';
+
     logoImg.parentNode.insertBefore(link, logoImg);
+
     link.appendChild(logoImg);
+
   }
 
+
+
   const decodeMeta = (value) => {
+
     if (!value) return '';
+
     const trimmed = value.trim();
+
     if (!trimmed || trimmed.startsWith('{{')) return '';
+
     const textarea = document.createElement('textarea');
+
     textarea.innerHTML = trimmed;
+
     return textarea.value.trim();
+
   };
+
+
 
   const metaRepoUrl = 'https://github.com/x0czz/EDUMER-DSE';
+
   const metaRepoUrlNormalized = metaRepoUrl ? metaRepoUrl.replace(/\/+$/g, '') : '';
 
+
+
   const computeArchiveUrl = (hrefHint) => {
+
     const baseHref = (hrefHint || metaRepoUrlNormalized || metaRepoUrl || '').trim();
+
     if (!baseHref) return '';
 
+
+
     try {
+
       const url = new URL(baseHref, window.location.href);
+
       const pathnameRaw = url.pathname.replace(/\/+$/g, '');
+
       const normalizeBranch = (value) => {
+
         const branch = (value || '').trim();
+
         return branch ? branch : 'main';
+
       };
 
+
+
       if (url.hostname.includes('github.')) {
+
         const match = pathnameRaw.match(/^\/([^/]+)\/([^/]+)(?:\/(tree|blob)\/([^/]+).*)?$/);
+
         if (!match) return '';
 
+
+
         const owner = match[1];
+
         const repo = match[2].replace(/\.git$/i, '');
+
         const branchFromPath = match[4];
+
         const branch = normalizeBranch(branchFromPath || url.searchParams.get('branch'));
 
+
+
         return `${url.origin}/${owner}/${repo}/archive/refs/heads/${branch}.zip`;
+
       }
+
+
 
       if (url.hostname.includes('gitlab.')) {
+
         const match = pathnameRaw.match(/^\/(.+?)(?:\/-\/tree\/([^/]+).*)?$/);
+
         if (!match) return '';
+
+
 
         const projectPath = match[1].replace(/\/+$/g, '');
+
         const repoName = projectPath.split('/').pop();
+
         const branchFromPath = match[2];
+
         const branch = normalizeBranch(branchFromPath || url.searchParams.get('ref')); // GitLab often uses ref param
 
+
+
         return `${url.origin}/${projectPath}/-/archive/${branch}/${repoName}-${branch}.zip`;
+
       }
+
+
 
       if (url.hostname.includes('bitbucket.')) {
+
         const match = pathnameRaw.match(/^\/([^/]+)\/([^/]+)(?:\/src\/([^/]+).*)?$/);
+
         if (!match) return '';
 
+
+
         const owner = match[1];
+
         const repo = match[2].replace(/\.git$/i, '');
+
         const branchFromPath = match[3];
+
         const branch = normalizeBranch(branchFromPath || url.searchParams.get('at'));
 
+
+
         return `${url.origin}/${owner}/${repo}/get/${branch}.zip`;
+
       }
+
+
 
       const branch = normalizeBranch(url.searchParams.get('branch'));
+
       return `${baseHref.replace(/\/+$/g, '')}/archive/refs/heads/${branch}.zip`;
+
     } catch (error) {
+
       return '';
+
     }
+
   };
 
+
+
   const ensureDownloadButton = (fromObserver = false) => {
+
     const tools = document.querySelector('.sidebar-title .sidebar-tools-main');
+
     if (!tools) {
+
       if (!fromObserver) {
+
         window.setTimeout(() => ensureDownloadButton(false), 100);
+
       }
+
       return;
+
     }
+
+
 
     let download = tools.querySelector('[data-template-download]');
+
     if (!download) {
+
       download = document.createElement('a');
+
       download.className = 'quarto-navigation-tool px-1';
+
       download.title = 'Descargar ZIP';
+
       download.setAttribute('aria-label', 'Descargar plantilla (ZIP)');
+
       download.setAttribute('data-template-download', 'true');
+
       download.target = '_blank';
+
       download.rel = 'noopener';
+
       download.innerHTML = '<i class="bi bi-download"></i>';
+
     }
+
+
 
     const links = Array.from(tools.querySelectorAll('a.quarto-navigation-tool'));
+
     let repoLink = null;
 
+
+
     if (metaRepoUrlNormalized) {
+
       repoLink = links.find((anchor) => {
+
         if (anchor === download) return false;
+
         const href = anchor.href ? anchor.href.replace(/\/+$/g, '') : '';
+
         return href === metaRepoUrlNormalized;
+
       });
+
     }
 
+
+
     if (!repoLink) {
+
       repoLink = links.find((anchor) => anchor !== download && anchor.querySelector('.bi-github'));
+
     }
 
+
+
     if (!repoLink) {
+
       repoLink = links.find((anchor) => {
+
         if (anchor === download) return false;
+
         const href = anchor.href || '';
+
         return /github\.|gitlab\.|bitbucket\./i.test(href);
+
       });
+
     }
+
+
 
     const archiveUrl = computeArchiveUrl(repoLink ? repoLink.href : undefined);
 
+
+
     if (!archiveUrl) {
+
       if (download.parentNode) {
+
         download.parentNode.removeChild(download);
+
       }
+
       return;
+
     }
+
+
 
     download.href = archiveUrl;
+
     download.title = 'Descargar plantilla (ZIP)';
+
     download.setAttribute('aria-label', 'Descargar plantilla (ZIP)');
+
     const codeToggle = links.find((anchor) => anchor.classList.contains('global-code-toggle'));
 
+
+
     if (repoLink) {
+
       repoLink.insertAdjacentElement('afterend', download);
+
     } else if (codeToggle) {
+
       codeToggle.insertAdjacentElement('beforebegin', download);
+
     } else {
+
       tools.insertBefore(download, tools.firstChild);
+
     }
+
   };
+
+
 
   ensureDownloadButton();
 
+
+
   const observer = new MutationObserver((mutations) => {
+
     const shouldUpdate = mutations.some((mutation) => {
+
       if (mutation.type !== 'childList') {
+
         return false;
+
       }
+
       return Array.from(mutation.addedNodes).some((node) => {
+
         if (!(node instanceof HTMLElement)) {
+
           return false;
+
         }
+
         return (
+
           node.classList.contains('global-code-toggle') ||
+
           (node.querySelector && node.querySelector('.global-code-toggle'))
+
         );
+
       });
+
     });
+
+
 
     if (shouldUpdate) {
+
       ensureDownloadButton(true);
+
     }
+
   });
+
+
 
   observer.observe(document.body, { childList: true, subtree: true });
+
 });
+
 </script>
+
 <script>
+
 (function () {
+
   var isReferences = /(?:^|\/)references\.html(?:#|$)/i.test(window.location.pathname);
 
+
+
   // Base relativa que Quarto publica (para apéndices/…)
+
   var offsetMeta = document.querySelector('meta[name="quarto:offset"]');
+
   var base = (offsetMeta && offsetMeta.content) ? offsetMeta.content : "";
 
+
+
   // 1) En capítulos: reescribe enlaces de cita -> references.html#ref-*
+
   if (!isReferences) {
+
     var cites = document.querySelectorAll('a[role="doc-biblioref"][href^="#ref-"]');
+
     cites.forEach(function (a) {
+
       var hash = a.getAttribute('href'); // "#ref-xxx"
+
       // Conserva tooltips. Añade marca para mostrar "volver" luego.
+
       a.setAttribute('href', base + 'references.html' + hash);
+
       a.setAttribute('data-citefix', 'from-chapter');
+
     });
+
+
 
     // Oculta bibliografía local si citeproc la insertó
+
     var localRefsBlocks = document.querySelectorAll('section.footnotes, div#refs, div.references, section#references');
+
     localRefsBlocks.forEach(function (el) { el.style.display = 'none'; });
+
   }
+
+
 
   // 2) En references.html: añade botón "Volver" si se llega desde otra página
+
   if (isReferences) {
+
     var cameFromOutside = document.referrer && !/\/references\.html(?:#|$)/i.test(new URL(document.referrer).pathname);
+
     if (cameFromOutside && window.history && window.history.length > 1) {
+
       var btn = document.createElement('button');
+
       btn.type = 'button';
+
       btn.textContent = '← Volver';
+
       btn.setAttribute('aria-label', 'Volver a la página anterior');
+
       btn.style.position = 'fixed';
+
       btn.style.right = '1rem';
+
       btn.style.bottom = '1rem';
+
       btn.style.zIndex = '9999';
+
       btn.style.padding = '.6rem .9rem';
+
       btn.style.borderRadius = '10px';
+
       btn.style.border = '1px solid rgba(0,0,0,.15)';
+
       btn.style.background = 'var(--bs-body-bg, #fff)';
+
       btn.style.color = 'var(--bs-body-color, #111)';
+
       btn.style.boxShadow = '0 6px 16px rgba(0,0,0,.12)';
+
       btn.onclick = function () { history.back(); };
+
       document.body.appendChild(btn);
+
     }
+
+
 
     // Si llegamos con hash (#ref-xxx), desplaza con un pequeño retardo
+
     // para asegurar que el layout esté listo.
+
     if (location.hash && /^#ref-/.test(location.hash)) {
+
       setTimeout(function () {
+
         try {
+
           var target = document.getElementById(location.hash.substring(1));
+
           if (target) target.scrollIntoView({behavior: 'smooth', block: 'start'});
+
         } catch (e) {}
+
       }, 50);
+
     }
+
   }
+
 })();
+
 </script>
+
+
 
 <style>
+
 /* Evita que el ancla de referencias quede “tapada” por el encabezado */
+
 .csl-entry[id^="ref-"],
+
 [id^="ref-"] { scroll-margin-top: 90px; }
 
+
+
 /* Ajuste suave para tooltips / focos de enlaces */
+
 a[role="doc-biblioref"]:focus-visible {
+
   outline: 2px dashed var(--facso-2, #84A7D8);
+
   outline-offset: 2px;
+
 }
 
+
+
 /* Opcional: separadores más legibles en la lista de referencias */
+
 #refs .csl-entry { padding: .25rem 0; border-bottom: 1px dashed rgba(0,0,0,.06); }
+
 #refs .csl-entry:last-child { border-bottom: none; }
+
 </style>
+
 <script>
+
 document.addEventListener("DOMContentLoaded", () => {
+
   const toc = document.querySelector("nav#TOC, nav.toc-active");
+
   if (!toc) {
+
     return;
+
   }
+
+
 
   const tocLinks = toc.querySelectorAll("a.nav-link[data-scroll-target]");
+
   if (!tocLinks.length) {
+
     return;
+
   }
+
+
 
   const sections = Array.from(tocLinks)
+
     .map((link) => {
+
       const target = document.querySelector(link.getAttribute("data-scroll-target"));
+
       return target ? { link, target, top: 0 } : null;
+
     })
+
     .filter(Boolean);
 
+
+
   const updateOffsets = () => {
+
     sections.forEach((section) => {
+
       section.top = section.target.getBoundingClientRect().top + window.scrollY;
+
     });
+
   };
+
+
 
   const activateLink = (targetLink) => {
+
     tocLinks.forEach((link) => link.classList.remove("active"));
+
     if (targetLink) {
+
       targetLink.classList.add("active");
+
     }
+
   };
+
+
 
   const OFFSET = 140;
+
   let ticking = false;
 
+
+
   const updateActiveSection = () => {
+
     const scrollPosition = window.scrollY + OFFSET;
+
     let current = sections[0];
 
+
+
     for (const section of sections) {
+
       if (section.top <= scrollPosition) {
+
         current = section;
+
       } else {
+
         break;
+
       }
+
     }
+
+
 
     activateLink(current ? current.link : null);
+
     ticking = false;
+
   };
+
+
 
   const onScroll = () => {
+
     if (!ticking) {
+
       window.requestAnimationFrame(updateActiveSection);
+
       ticking = true;
+
     }
+
   };
+
+
 
   updateOffsets();
+
   updateActiveSection();
 
+
+
   window.addEventListener("scroll", onScroll, { passive: true });
+
   window.addEventListener("resize", () => {
+
     updateOffsets();
+
     updateActiveSection();
+
   });
 
+
+
   window.addEventListener("hashchange", () => {
+
     const hash = window.location.hash;
+
     const match = sections.find((section) => section.link.getAttribute("data-scroll-target") === hash);
+
     if (match) {
+
       activateLink(match.link);
+
     }
+
   });
+
 });
+
 </script>
+
 <script id="quarto-html-after-body" type="application/javascript">
-window.document.addEventListener("DOMContentLoaded", function (event) {
-  const toggleBodyColorMode = (bsSheetEl) => {
-    const mode = bsSheetEl.getAttribute("data-mode");
-    const bodyEl = window.document.querySelector("body");
-    if (mode === "dark") {
-      bodyEl.classList.add("quarto-dark");
-      bodyEl.classList.remove("quarto-light");
-    } else {
-      bodyEl.classList.add("quarto-light");
-      bodyEl.classList.remove("quarto-dark");
-    }
-  }
-  const toggleBodyColorPrimary = () => {
-    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
-    if (bsSheetEl) {
-      toggleBodyColorMode(bsSheetEl);
-    }
-  }
-  toggleBodyColorPrimary();  
-  const icon = "";
-  const anchorJS = new window.AnchorJS();
-  anchorJS.options = {
-    placement: 'right',
-    icon: icon
-  };
-  anchorJS.add('.anchored');
-  const isCodeAnnotation = (el) => {
-    for (const clz of el.classList) {
-      if (clz.startsWith('code-annotation-')) {                     
-        return true;
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
       }
+      return false;
     }
-    return false;
-  }
-  const onCopySuccess = function(e) {
-    // button target
-    const button = e.trigger;
-    // don't keep focus
-    button.blur();
-    // flash "checked"
-    button.classList.add('code-copy-button-checked');
-    var currentTitle = button.getAttribute("title");
-    button.setAttribute("title", "Copiado");
-    let tooltip;
-    if (window.bootstrap) {
-      button.setAttribute("data-bs-toggle", "tooltip");
-      button.setAttribute("data-bs-placement", "left");
-      button.setAttribute("data-bs-title", "Copiado");
-      tooltip = new bootstrap.Tooltip(button, 
-        { trigger: "manual", 
-          customClass: "code-copy-button-tooltip",
-          offset: [0, -8]});
-      tooltip.show();    
-    }
-    setTimeout(function() {
-      if (tooltip) {
-        tooltip.hide();
-        button.removeAttribute("data-bs-title");
-        button.removeAttribute("data-bs-toggle");
-        button.removeAttribute("data-bs-placement");
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copiado");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copiado");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
       }
-      button.setAttribute("title", currentTitle);
-      button.classList.remove('code-copy-button-checked');
-    }, 1000);
-    // clear code selection
-    e.clearSelection();
-  }
-  const getTextToCopy = function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
       for (const childEl of codeEl.children) {
         if (isCodeAnnotation(childEl)) {
           childEl.remove();
         }
       }
       return codeEl.innerText;
-  }
-  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
-    text: getTextToCopy
-  });
-  clipboard.on('success', onCopySuccess);
-  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
-    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
-      text: getTextToCopy,
-      container: window.document.getElementById('quarto-embedded-source-code-modal')
-    });
-    clipboardModal.on('success', onCopySuccess);
-  }
-    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
-    var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp('/' + window.location.host + '/');
-    var isInternal = (href) => {
-        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
-    // Inspect non-navigation links and adorn them if external
- 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
-    for (var i=0; i<links.length; i++) {
-      const link = links[i];
-      if (!isInternal(link.href)) {
-        // undo the damage that might have been done by quarto-nav.js in the case of
-        // links that we want to consider external
-        if (link.dataset.originalHref !== undefined) {
-          link.href = link.dataset.originalHref;
-        }
-          // target, if specified
-          link.setAttribute("target", "_blank");
-          if (link.getAttribute("rel") === null) {
-            link.setAttribute("rel", "noopener");
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
           }
-      }
-    }
-  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
-    const config = {
-      allowHTML: true,
-      maxWidth: 500,
-      delay: 100,
-      arrow: false,
-      appendTo: function(el) {
-          return el.parentElement;
-      },
-      interactive: true,
-      interactiveBorder: 10,
-      theme: 'quarto',
-      placement: 'bottom-start',
-    };
-    if (contentFn) {
-      config.content = contentFn;
-    }
-    if (onTriggerFn) {
-      config.onTrigger = onTriggerFn;
-    }
-    if (onUntriggerFn) {
-      config.onUntrigger = onUntriggerFn;
-    }
-    window.tippy(el, config); 
-  }
-  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
-  for (var i=0; i<noterefs.length; i++) {
-    const ref = noterefs[i];
-    tippyHover(ref, function() {
-      // use id or data attribute instead here
-      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
-      try { href = new URL(href).hash; } catch {}
-      const id = href.replace(/^#\/?/, "");
-      const note = window.document.getElementById(id);
-      if (note) {
-        return note.innerHTML;
-      } else {
-        return "";
-      }
-    });
-  }
-  const xrefs = window.document.querySelectorAll('a.quarto-xref');
-  const processXRef = (id, note) => {
-    // Strip column container classes
-    const stripColumnClz = (el) => {
-      el.classList.remove("page-full", "page-columns");
-      if (el.children) {
-        for (const child of el.children) {
-          stripColumnClz(child);
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
         }
       }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
     }
-    stripColumnClz(note)
-    if (id === null || id.startsWith('sec-')) {
-      // Special case sections, only their first couple elements
-      const container = document.createElement("div");
-      if (note.children && note.children.length > 2) {
-        container.appendChild(note.children[0].cloneNode(true));
-        for (let i = 1; i < note.children.length; i++) {
-          const child = note.children[i];
-          if (child.tagName === "P" && child.innerText === "") {
-            continue;
-          } else {
-            container.appendChild(child.cloneNode(true));
-            break;
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
           }
         }
-        if (window.Quarto?.typesetMath) {
-          window.Quarto.typesetMath(container);
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
         }
-        return container.innerHTML
       } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
         if (window.Quarto?.typesetMath) {
           window.Quarto.typesetMath(note);
         }
-        return note.innerHTML;
-      }
-    } else {
-      // Remove any anchor links if they are present
-      const anchorLink = note.querySelector('a.anchorjs-link');
-      if (anchorLink) {
-        anchorLink.remove();
-      }
-      if (window.Quarto?.typesetMath) {
-        window.Quarto.typesetMath(note);
-      }
-      if (note.classList.contains("callout")) {
-        return note.outerHTML;
-      } else {
-        return note.innerHTML;
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
       }
     }
-  }
-  for (var i=0; i<xrefs.length; i++) {
-    const xref = xrefs[i];
-    tippyHover(xref, undefined, function(instance) {
-      instance.disable();
-      let url = xref.getAttribute('href');
-      let hash = undefined; 
-      if (url.startsWith('#')) {
-        hash = url;
-      } else {
-        try { hash = new URL(url).hash; } catch {}
-      }
-      if (hash) {
-        const id = hash.replace(/^#\/?/, "");
-        const note = window.document.getElementById(id);
-        if (note !== null) {
-          try {
-            const html = processXRef(id, note.cloneNode(true));
-            instance.setContent(html);
-          } finally {
-            instance.enable();
-            instance.show();
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
           }
         } else {
-          // See if we can fetch this
-          fetch(url.split('#')[0])
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
           .then(res => res.text())
           .then(html => {
             const parser = new DOMParser();
             const htmlDoc = parser.parseFromString(html, "text/html");
-            const note = htmlDoc.getElementById(id);
+            const note = htmlDoc.querySelector('main.content');
             if (note !== null) {
-              const html = processXRef(id, note);
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
               instance.setContent(html);
             } 
           }).finally(() => {
@@ -1587,185 +1796,161 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             instance.show();
           });
         }
-      } else {
-        // See if we can fetch a full url (with no hash to target)
-        // This is a special case and we should probably do some content thinning / targeting
-        fetch(url)
-        .then(res => res.text())
-        .then(html => {
-          const parser = new DOMParser();
-          const htmlDoc = parser.parseFromString(html, "text/html");
-          const note = htmlDoc.querySelector('main.content');
-          if (note !== null) {
-            // This should only happen for chapter cross references
-            // (since there is no id in the URL)
-            // remove the first header
-            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
-              note.children[0].remove();
-            }
-            const html = processXRef(null, note);
-            instance.setContent(html);
-          } 
-        }).finally(() => {
-          instance.enable();
-          instance.show();
-        });
-      }
-    }, function(instance) {
-    });
-  }
-      let selectedAnnoteEl;
-      const selectorForAnnotation = ( cell, annotation) => {
-        let cellAttr = 'data-code-cell="' + cell + '"';
-        let lineAttr = 'data-code-annotation="' +  annotation + '"';
-        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
-        return selector;
-      }
-      const selectCodeLines = (annoteEl) => {
-        const doc = window.document;
-        const targetCell = annoteEl.getAttribute("data-target-cell");
-        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
-        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
-        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
-        const lineIds = lines.map((line) => {
-          return targetCell + "-" + line;
-        })
-        let top = null;
-        let height = null;
-        let parent = null;
-        if (lineIds.length > 0) {
-            //compute the position of the single el (top and bottom and make a div)
-            const el = window.document.getElementById(lineIds[0]);
-            top = el.offsetTop;
-            height = el.offsetHeight;
-            parent = el.parentElement.parentElement;
-          if (lineIds.length > 1) {
-            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
-            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
-            height = bottom - top;
-          }
-          if (top !== null && height !== null && parent !== null) {
-            // cook up a div (if necessary) and position it 
-            let div = window.document.getElementById("code-annotation-line-highlight");
-            if (div === null) {
-              div = window.document.createElement("div");
-              div.setAttribute("id", "code-annotation-line-highlight");
-              div.style.position = 'absolute';
-              parent.appendChild(div);
-            }
-            div.style.top = top - 2 + "px";
-            div.style.height = height + 4 + "px";
-            div.style.left = 0;
-            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
-            if (gutterDiv === null) {
-              gutterDiv = window.document.createElement("div");
-              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
-              gutterDiv.style.position = 'absolute';
-              const codeCell = window.document.getElementById(targetCell);
-              const gutter = codeCell.querySelector('.code-annotation-gutter');
-              gutter.appendChild(gutterDiv);
-            }
-            gutterDiv.style.top = top - 2 + "px";
-            gutterDiv.style.height = height + 4 + "px";
-          }
-          selectedAnnoteEl = annoteEl;
-        }
-      };
-      const unselectCodeLines = () => {
-        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
-        elementsIds.forEach((elId) => {
-          const div = window.document.getElementById(elId);
-          if (div) {
-            div.remove();
-          }
-        });
-        selectedAnnoteEl = undefined;
-      };
-        // Handle positioning of the toggle
-    window.addEventListener(
-      "resize",
-      throttle(() => {
-        elRect = undefined;
-        if (selectedAnnoteEl) {
-          selectCodeLines(selectedAnnoteEl);
-        }
-      }, 10)
-    );
-    function throttle(fn, ms) {
-    let throttle = false;
-    let timer;
-      return (...args) => {
-        if(!throttle) { // first call gets through
-            fn.apply(this, args);
-            throttle = true;
-        } else { // all the others get throttled
-            if(timer) clearTimeout(timer); // cancel #2
-            timer = setTimeout(() => {
-              fn.apply(this, args);
-              timer = throttle = false;
-            }, ms);
-        }
-      };
-    }
-      // Attach click handler to the DT
-      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
-      for (const annoteDlNode of annoteDls) {
-        annoteDlNode.addEventListener('click', (event) => {
-          const clickedEl = event.target;
-          if (clickedEl !== selectedAnnoteEl) {
-            unselectCodeLines();
-            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
-            if (activeEl) {
-              activeEl.classList.remove('code-annotation-active');
-            }
-            selectCodeLines(clickedEl);
-            clickedEl.classList.add('code-annotation-active');
-          } else {
-            // Unselect the line
-            unselectCodeLines();
-            clickedEl.classList.remove('code-annotation-active');
-          }
-        });
-      }
-  const findCites = (el) => {
-    const parentEl = el.parentElement;
-    if (parentEl) {
-      const cites = parentEl.dataset.cites;
-      if (cites) {
-        return {
-          el,
-          cites: cites.split(' ')
-        };
-      } else {
-        return findCites(el.parentElement)
-      }
-    } else {
-      return undefined;
-    }
-  };
-  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
-  for (var i=0; i<bibliorefs.length; i++) {
-    const ref = bibliorefs[i];
-    const citeInfo = findCites(ref);
-    if (citeInfo) {
-      tippyHover(citeInfo.el, function() {
-        var popup = window.document.createElement('div');
-        citeInfo.cites.forEach(function(cite) {
-          var citeDiv = window.document.createElement('div');
-          citeDiv.classList.add('hanging-indent');
-          citeDiv.classList.add('csl-entry');
-          var biblioDiv = window.document.getElementById('ref-' + cite);
-          if (biblioDiv) {
-            citeDiv.innerHTML = biblioDiv.innerHTML;
-          }
-          popup.appendChild(citeDiv);
-        });
-        return popup.innerHTML;
+      }, function(instance) {
       });
     }
-  }
-});
-</script>
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
 </div> <!-- /content -->
 
 

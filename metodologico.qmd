@@ -42,8 +42,6 @@ main section.level1 { margin-top: 2.2rem; }
 caption { color: #475569 !important; font-style: italic; }
 .callout { border-left-color: #002f6c !important; }
 main table td:not(:first-child), main table th:not(:first-child) { white-space: nowrap; }
-#tbl-top3 td:nth-child(2), #tbl-top3 td:last-child { white-space: normal; }
-#tbl-top3 td:last-child { min-width: 16rem; font-size: 0.85em; }
 pre.salida { font-size: 0.78em; line-height: 1.25; background: #f8fafc; border: 1px solid #e5e7eb; padding: 0.6rem; }
 </style>
 ```
@@ -80,7 +78,7 @@ validos <- db_students_w02 %>%
   filter(exp_t4_a + exp_t4_b + exp_t4_c + exp_t4_d == 10)
 n_validos <- nrow(validos)
 
-# Moderadores seleccionados (sección 5)
+# Moderadores seleccionados
 mods_esf <- c(pref_esfuerzo = "p1_5_o2", aspiracion = "p16_o2", contactos = "p1_4_o2",
               esf_maleable = "p8_1_o2", salud_mercado = "p9_4_o2")
 mods_opo <- c(padres_ricos  = "p1_7_o2", merito_escuela = "p2_1_o2", intel_maleable = "p8_2_o2")
@@ -211,92 +209,6 @@ Todos los modelos son lineales multinivel estimados por máxima verosimilitud (p
 | M4a–c | M2 + un moderador de nivel 2 y su interacción con la oportunidad (uno por modelo) |
 
 : Secuencia de modelos {#tbl-secuencia}
-
-## Por qué pendientes aleatorias
-
-Una interacción entre niveles explica por qué el efecto de un atributo varía entre estudiantes. Si el modelo no permite esa variación (sin pendientes aleatorias), supone que todos los estudiantes ponderan igual el esfuerzo. Los errores estándar de las interacciones se subestiman y aumentan los falsos positivos (Heisig y Schaeffer, 2019). Las pendientes se estiman sin correlación entre sí (`||`), porque con cuatro decisiones por estudiante hay poca información para estimar covarianzas.
-
-## La interacción esfuerzo × oportunidad
-
-Se omite de la secuencia principal para mantener los modelos centrados en los efectos principales del diseño. Incluirla no cambia los demás coeficientes, porque el diseño es ortogonal.
-
-# Selección de moderadores
-
-```{r}
-#| label: tamizaje
-
-vars_t <- c(paste0("p1_", 1:10, "_o2"), paste0("p2_", 1:3, "_o2"), "p3_o2", "p4_o2", "p5_o2",
-            "p7_o2", "p8_1_o2", "p8_2_o2", paste0("p9_", 1:6, "_o2"), "p16_o2", "p17_o2",
-            "p18_o2", "p19_o2")
-etq_t <- map_chr(vars_t, ~ attr(db_students_w02[[.x]], "label")) %>% setNames(vars_t)
-base_t <- validos %>%
-  mutate(across(all_of(vars_t), limpiar),
-         segundo_medio = as.numeric(as.numeric(zap_labels(nivel_estudiante_o2)) == 2),
-         mujer         = as.numeric(as.numeric(zap_labels(p14_o2)) == 2))
-vars_t <- c(vars_t, "segundo_medio", "mujer")
-etq_t  <- c(etq_t, segundo_medio = "Curso: 2° medio (vs. 7° básico)", mujer = "Género: mujer (vs. hombre u otro)")
-
-tamizaje <- map_dfr(vars_t, function(v) {
-  d <- base_t %>%
-    filter(!is.na(.data[[v]])) %>%
-    transmute(id_estudiante, A = exp_t4_a, B = exp_t4_b, C = exp_t4_c, D = exp_t4_d,
-              z = (.data[[v]] - mean(.data[[v]])) / sd(.data[[v]])) %>%
-    pivot_longer(A:D, names_to = "perfil", values_to = "decimas") %>%
-    mutate(esfuerzo    = if_else(perfil %in% c("A", "C"), 0.5, -0.5),
-           oportunidad = if_else(perfil %in% c("B", "C"), 0.5, -0.5))
-  m0 <- lmer(decimas ~ esfuerzo + oportunidad + (1 + esfuerzo + oportunidad || id_estudiante),
-             data = d, REML = FALSE, control = ctrl)
-  map_dfr(c("esfuerzo", "oportunidad"), function(a) {
-    m <- lmer(as.formula(paste0("decimas ~ esfuerzo + oportunidad + ", a,
-                                ":z + (1 + esfuerzo + oportunidad || id_estudiante)")),
-              data = d, REML = FALSE, control = ctrl)
-    s <- summary(m)$coefficients[paste0(a, ":z"), ]
-    tibble(var = v, etiqueta = etq_t[[v]], atributo = if_else(a == "esfuerzo", "Esfuerzo", "Oportunidad"),
-           b = s[["Estimate"]], ee = s[["Std. Error"]], p = s[["Pr(>|t|)"]],
-           chi = anova(m0, m)$Chisq[2], dAIC = AIC(m) - AIC(m0), dBIC = BIC(m) - BIC(m0),
-           n = n_distinct(d$id_estudiante))
-  })
-}) %>%
-  group_by(atributo) %>% mutate(holm = p.adjust(p, "holm")) %>% ungroup()
-
-lectura <- c(
-  "p1_5_o2/Esfuerzo"    = "Quien prefiere premiar el esfuerzo lo premia más al repartir",
-  "p16_o2/Esfuerzo"     = "Quien aspira a la universidad valora más el esfuerzo como vía de logro",
-  "p1_4_o2/Esfuerzo"    = "Quien ve que los contactos pesan compensa premiando el esfuerzo",
-  "p8_1_o2/Esfuerzo"    = "Si el esfuerzo depende de la voluntad, es más legítimo premiarlo",
-  "p9_4_o2/Esfuerzo"    = "Quien acepta que el dinero compre mejor salud (justicia de mercado) da menos peso al esfuerzo",
-  "p1_7_o2/Oportunidad" = "Quien legitima el privilegio de origen compensa menos la casa pequeña",
-  "p2_1_o2/Oportunidad" = "Si la escuela premia el esfuerzo, la casa importa menos y se compensa menos",
-  "p8_2_o2/Oportunidad" = "Si la inteligencia es maleable, las condiciones de origen pesan menos")
-top3 <- tamizaje %>%
-  mutate(clave = paste0(var, "/", atributo)) %>%
-  filter(clave %in% names(lectura)) %>%
-  mutate(lectura = lectura[clave],
-         etiqueta = unname(etq_mod[names(c(mods_esf, mods_opo))[match(var, c(mods_esf, mods_opo))]]))
-n_mod_t <- length(vars_t)
-```
-
-Los moderadores se eligieron mediante un tamizaje exploratorio: se estimaron `r nrow(tamizaje)` modelos, uno por cada combinación de `r n_mod_t` posibles moderadores de la ola 2 (actitudes, percepciones, notas, aspiraciones, educación de los padres, curso y género) con cada atributo. Cada modelo agrega una sola interacción a M2. En este tamizaje no se incluye el efecto principal del moderador, porque vale 0 por la suma fija: incluirlo solo agrega un parámetro sin capacidad explicativa y penaliza el AIC y el BIC. De las `r sum(tamizaje$p < .05)` interacciones significativas al 5 %, se seleccionaron ocho que tienen una lectura teórica clara sobre meritocracia y justicia distributiva: cinco moderan el peso del esfuerzo y tres el de la oportunidad. Se descartaron las que no tienen una interpretación sustantiva evidente (por ejemplo, la evaluación de la propia nota) o que, al restringir la muestra a quienes responden los ocho moderadores, dejan de ser significativas (la percepción de igualdad de oportunidades):
-
-```{r}
-#| label: tbl-top3
-#| tbl-cap: "Las ocho interacciones seleccionadas"
-
-top3 %>%
-  arrange(atributo, p) %>%
-  transmute(Atributo = atributo, Moderador = etiqueta, b = fmt(b), p = fmt_p(p),
-            `Holm` = fmt_p(holm), `ΔAIC` = fmt(dAIC, 1), `ΔBIC` = fmt(dBIC, 1), Lectura = lectura) %>%
-  tabla(col.names = c("Atributo", "Moderador", "<em>b</em>", "<em>p</em>", "<em>p</em> Holm", "ΔAIC", "ΔBIC", "Lectura teórica"),
-        align = "llrrrrrl")
-```
-
-::: {.nota-apa}
-*Nota.* *b*: cambio en el efecto del atributo (en décimas) por cada *DE* del moderador. ΔAIC y ΔBIC respecto de M2 (negativo = mejor ajuste). *p* Holm: corregido por comparaciones múltiples dentro de cada atributo. Cada modelo se estimó con todos los estudiantes con respuesta en ese moderador.
-:::
-
-::: {.callout-warning appearance="simple"}
-Advertencia sobre la selección. Elegir las interacciones por su valor *p* en los mismos datos infla la probabilidad de falsos positivos: con `r nrow(tamizaje)` tests se esperan unos `r round(nrow(tamizaje) * 0.05)` significativos al 5 % solo por azar. Solo la preferencia por premiar el esfuerzo sobrevive la corrección de Holm y mejora el BIC. Las demás deben tratarse como exploratorias y requieren replicación (por ejemplo, en otra ola de EDUMER).
-:::
 
 # Resultados de la secuencia de modelos
 
@@ -525,7 +437,7 @@ ggplot(dist_g, aes(gini, pct)) +
   theme_minimal(base_size = 11) + theme(panel.grid.minor = element_blank())
 ```
 
-Como la variable dependiente tiene un valor por estudiante, el modelo es una regresión lineal común (no multinivel), con efectos fijos por escuela, que absorben las diferencias entre establecimientos (con solo 9 escuelas, los errores agrupados por escuela serían poco confiables). Se usan errores estándar clásicos: con errores robustos (HC2) las conclusiones no cambian y el test de Breusch-Pagan no detecta heterocedasticidad. Los predictores se eligieron por su relevancia teórica, no por tamizaje: preferencias meritocráticas, igualitarismo, justicia de mercado, percepciones de la sociedad y la escuela, y características del estudiante. La educación de los padres se omite porque tiene un `r fmt(100 * mean(is.na(pmax(limpiar(validos$p17_o2), limpiar(validos$p18_o2), na.rm = TRUE))), 0)` % de datos perdidos.
+Como la variable dependiente tiene un valor por estudiante, el modelo es una regresión lineal común (no multinivel), con efectos fijos por escuela, que absorben las diferencias entre establecimientos (con solo 9 escuelas, los errores agrupados por escuela serían poco confiables). Se usan errores estándar clásicos: con errores robustos (HC2) las conclusiones no cambian y el test de Breusch-Pagan no detecta heterocedasticidad. Los predictores se eligieron por su relevancia teórica: preferencias meritocráticas, igualitarismo, justicia de mercado, percepciones de la sociedad y la escuela, y características del estudiante. La educación de los padres se omite porque tiene un `r fmt(100 * mean(is.na(pmax(limpiar(validos$p17_o2), limpiar(validos$p18_o2), na.rm = TRUE))), 0)` % de datos perdidos.
 
 ```{r}
 #| label: tbl-gini
