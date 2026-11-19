@@ -91,6 +91,7 @@ hip0 <- tibble::tribble(
   "H2",  "notas",        "Promedio de notas",              "+",
   "H3",  "univ",         "Expectativa universitaria",      "+",
   "H4",  "ola2",         "Segunda ola (trayectoria)",      "±",
+  "H4",  "cohorte_media", "Cohorte de media (vs. básica)", "±",
   "H5a", "merit_soc",    "Percepción de meritocracia",     "+",
   "H5b", "privilegio",   "Percepción de privilegio",       "−",
   "H5c", "pref_merit",   "Preferencia meritocrática",      "−",
@@ -99,9 +100,13 @@ hip0 <- tibble::tribble(
 tipos <- c("Within\n(cambio propio)", "Between\n(entre estudiantes)",
            "Contextual\n(between − within)")
 hip <- bind_rows(
-  hip0 |> mutate(tipo = tipos[1], term = ifelse(var == "ola2", "ola2", paste0(var, "_gmc"))),
-  hip0 |> filter(var != "ola2") |> mutate(tipo = tipos[2], term = paste0(var, "_between")),
-  hip0 |> filter(var != "ola2") |> mutate(tipo = tipos[3], term = paste0(var, "_m"))
+  # la ola solo varía dentro del estudiante; la cohorte solo entre estudiantes
+  hip0 |> filter(var != "cohorte_media") |>
+    mutate(tipo = tipos[1], term = ifelse(var == "ola2", "ola2", paste0(var, "_gmc"))),
+  hip0 |> filter(var != "ola2") |>
+    mutate(tipo = tipos[2], term = ifelse(var == "cohorte_media", "cohorte_media", paste0(var, "_between"))),
+  hip0 |> filter(!var %in% c("ola2", "cohorte_media")) |>
+    mutate(tipo = tipos[3], term = paste0(var, "_m"))
 ) |>
   left_join(res, by = "term") |>
   mutate(
@@ -204,14 +209,15 @@ La investigación con escolares ha estudiado sobre todo las creencias meritocrá
 ```{r}
 #| label: forest
 #| fig-width: 10.6
-#| fig-height: 9.8
+#| fig-height: 10.6
 #| dpi: 300
 #| out-width: "100%"
 cols  <- c("Dirección esperada" = "#99000D", "Contraria" = "#4A4A4A", "No significativo" = "#8C8C8C")
 shps  <- c("Dirección esperada" = 16, "Contraria" = 17, "No significativo" = 21)
 
 pd <- hip |>
-  mutate(etiqueta = factor(etiqueta, levels = rev(unique(hip$etiqueta))),
+  mutate(etiqueta = factor(etiqueta, levels = rev(paste0(hip0$cod, "  ", hip0$nombre,
+                                                         " (", hip0$esperado, ")"))),
          tipo = factor(tipo, levels = tipos),
          veredicto = factor(veredicto, levels = names(cols)),
          texto = paste0(f2(or), estrellas))
@@ -223,9 +229,13 @@ ggplot(pd, aes(x = or, y = etiqueta, colour = veredicto, shape = veredicto)) +
   geom_point(size = 4.2, stroke = 1.3, fill = "white") +
   geom_text(aes(label = texto), vjust = -1.05, size = 4.6,
             colour = "#1E1E1E", show.legend = FALSE) +
-  geom_text(data = data.frame(tipo = factor(tipos[2:3], levels = tipos),
-                              etiqueta = factor(levels(pd$etiqueta)[5], levels = levels(pd$etiqueta))),
-            aes(x = 1, y = etiqueta, label = "solo within"), inherit.aes = FALSE,
+  geom_text(data = data.frame(
+              tipo = factor(tipos[c(2, 3, 1, 3)], levels = tipos),
+              etiqueta = factor(rep(c("H4  Segunda ola (trayectoria) (±)",
+                                      "H4  Cohorte de media (vs. básica) (±)"), each = 2),
+                                levels = levels(pd$etiqueta)),
+              txt = rep(c("solo within", "solo between"), each = 2)),
+            aes(x = 1, y = etiqueta, label = txt), inherit.aes = FALSE,
             size = 4.4, colour = "#8C8C8C", fontface = "italic") +
   facet_wrap(~ tipo, ncol = 3) +
   scale_x_log10(limits = c(0.2, 5), breaks = c(0.25, 0.5, 1, 2, 4),
